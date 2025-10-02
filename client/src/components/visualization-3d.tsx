@@ -153,6 +153,34 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
   const [webglError, setWebglError] = useState(false);
+  const [contextLost, setContextLost] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
+
+  // Handle WebGL context loss and restoration
+  useEffect(() => {
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      console.log('WebGL context lost');
+      setContextLost(true);
+    };
+
+    const handleContextRestored = () => {
+      console.log('WebGL context restored');
+      setContextLost(false);
+      setCanvasKey(prev => prev + 1); // Force Canvas remount
+    };
+
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      canvas.addEventListener('webglcontextlost', handleContextLost);
+      canvas.addEventListener('webglcontextrestored', handleContextRestored);
+      
+      return () => {
+        canvas.removeEventListener('webglcontextlost', handleContextLost);
+        canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+      };
+    }
+  }, []);
 
   return (
     <>
@@ -160,7 +188,7 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
       <div className="bg-muted/50 p-4 rounded-lg mb-6">
         <p className="text-sm text-muted-foreground mb-2 flex items-start gap-2">
           <Info className="text-accent mt-0.5" size={16} />
-          The 1536-dimensional vectors have been reduced to 3D using PCA (Principal Component Analysis) 
+          The {analysisResult.model ? `${analysisResult.visualization.pcaInfo.originalDimensions}-dimensional` : '1536-dimensional'} vectors have been reduced to 3D using PCA (Principal Component Analysis) 
           for visualization. Words closer together in space have more similar meanings.
         </p>
         <div className="flex flex-wrap gap-4 mt-3 text-xs">
@@ -178,8 +206,27 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
 
       {/* 3D Canvas Container */}
       <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        {!webglError ? (
+        {contextLost ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-8">
+              <p className="text-muted-foreground mb-4">
+                ⚠️ 3D graphics temporarily unavailable
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Your browser's graphics engine needed to restart. Please refresh the page to restore the visualization.
+              </p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4"
+                data-testid="button-refresh-page"
+              >
+                Refresh Page
+              </Button>
+            </div>
+          </div>
+        ) : !webglError ? (
           <Canvas 
+            key={canvasKey}
             camera={{ position: [5, 5, 5], fov: 60 }}
             onCreated={({ gl }) => {
               console.log('WebGL context created successfully');
