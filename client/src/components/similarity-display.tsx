@@ -41,7 +41,9 @@ export default function SimilarityDisplay({ analysisResult }: SimilarityDisplayP
         <p className="text-sm text-muted-foreground flex items-start gap-2">
           <GraduationCap className="text-accent mt-0.5" size={16} />
           Each word has been converted into a vector with 1536 dimensions (OpenAI's text-embedding-3-small model). 
-          Below, we show the cosine similarity between each pair of words.
+          Below, we show the cosine similarity between each pair of words. 
+          <strong>Cosine similarity ranges from 0 to 1</strong>, where 1 means identical meaning and 0 means unrelated. 
+          The percentage shows the same value scaled to 0-100% for easier visualization.
         </p>
       </div>
 
@@ -76,10 +78,10 @@ export default function SimilarityDisplay({ analysisResult }: SimilarityDisplayP
                   className={`similarity-score ${getSimilarityColor(sim.similarity)}`}
                   data-testid={`similarity-score-${index}`}
                 >
-                  {sim.similarity.toFixed(3)}
+                  {sim.similarity.toFixed(3)} ({(sim.similarity * 100).toFixed(1)}%)
                 </span>
               </div>
-              <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+              <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden" title={`${(sim.similarity * 100).toFixed(1)}% similarity`}>
                 <div 
                   className={`h-full ${getSimilarityBarColor(sim.similarity)} transition-all`}
                   style={{ width: `${Math.max(0, sim.similarity * 100)}%` }}
