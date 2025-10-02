@@ -77,12 +77,25 @@ export class Vanilla3DScene {
 
     const { coordinates } = analysisResult.visualization;
     
-    // Scale coordinates
+    // Calculate bounding box to determine optimal scaling
+    const xs = coordinates.map(c => c.x);
+    const ys = coordinates.map(c => c.y);
+    const zs = coordinates.map(c => c.z);
+    
+    const maxRange = Math.max(
+      Math.max(...xs) - Math.min(...xs),
+      Math.max(...ys) - Math.min(...ys),
+      Math.max(...zs) - Math.min(...zs)
+    );
+    
+    // Scale to fill a 10-unit cube (ensures good visibility)
+    const scale = maxRange > 0 ? 10 / maxRange : 50;
+    
     const scaledCoordinates = coordinates.map(coord => ({
       ...coord,
-      x: coord.x * 5,
-      y: coord.y * 5,
-      z: coord.z * 5,
+      x: coord.x * scale,
+      y: coord.y * scale,
+      z: coord.z * scale,
     }));
 
     // Add word points
