@@ -54,19 +54,48 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
     row.map((val, idx) => val - mean[idx])
   );
 
-  // For simplicity, we'll use a basic projection approach
-  // In a production system, you'd want proper SVD-based PCA
-  const result = [];
-  for (let i = 0; i < numSamples; i++) {
-    const coords = {
-      x: centeredData[i].slice(0, 100).reduce((sum, val) => sum + val, 0) / 100,
-      y: centeredData[i].slice(100, 200).reduce((sum, val) => sum + val, 0) / 100,
-      z: centeredData[i].slice(200, 300).reduce((sum, val) => sum + val, 0) / 100,
-    };
-    result.push(coords);
+  // Simplified projection approach for educational visualization
+  // Uses dimension chunks to approximate principal components
+  const chunkSize = Math.floor(numFeatures / targetDim);
+  const coordinates = [];
+  const variances = [];
+  
+  for (let dim = 0; dim < targetDim; dim++) {
+    const start = dim * chunkSize;
+    const end = dim === targetDim - 1 ? numFeatures : (dim + 1) * chunkSize;
+    
+    // Calculate projection and variance for this dimension
+    let variance = 0;
+    for (let i = 0; i < numSamples; i++) {
+      const chunk = centeredData[i].slice(start, end);
+      const projection = chunk.reduce((sum, val) => sum + val, 0) / chunk.length;
+      
+      if (!coordinates[i]) {
+        coordinates[i] = { x: 0, y: 0, z: 0 };
+      }
+      
+      if (dim === 0) coordinates[i].x = projection;
+      else if (dim === 1) coordinates[i].y = projection;
+      else if (dim === 2) coordinates[i].z = projection;
+      
+      variance += projection * projection;
+    }
+    variances.push(variance / numSamples);
   }
+  
+  // Calculate total variance and percentages
+  const totalVariance = variances.reduce((sum, v) => sum + v, 0);
+  const varianceExplained = variances.map(v => (v / totalVariance) * 100);
 
-  return result;
+  return {
+    coordinates,
+    pcaInfo: {
+      originalDimensions: numFeatures,
+      reducedDimensions: targetDim,
+      varianceExplained: varianceExplained.map(v => Math.round(v * 10) / 10),
+      method: "simplified_projection"
+    }
+  };
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -110,13 +139,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Perform PCA for 3D visualization
       const embeddingVectors = embeddings.map(e => e.embedding);
-      const coordinates3D = performPCA(embeddingVectors);
+      const pcaResult = performPCA(embeddingVectors);
       
       const visualization = {
         coordinates: embeddings.map((e, index) => ({
           word: e.word,
-          ...coordinates3D[index],
+          ...pcaResult.coordinates[index],
         })),
+        pcaInfo: pcaResult.pcaInfo,
       };
 
       const result: AnalysisResult = {

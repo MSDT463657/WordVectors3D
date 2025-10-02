@@ -25,6 +25,12 @@ export const analysisResultSchema = z.object({
       y: z.number(),
       z: z.number(),
     })),
+    pcaInfo: z.object({
+      originalDimensions: z.number(),
+      reducedDimensions: z.number(),
+      varianceExplained: z.array(z.number()),
+      method: z.string(),
+    }),
   }),
 });
 

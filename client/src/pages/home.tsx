@@ -3,6 +3,7 @@ import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot } from "lucide-react";
 import WordInput from "@/components/word-input";
 import SimilarityDisplay from "@/components/similarity-display";
 import Visualization3D from "@/components/visualization-3d";
+import PCAExplanation from "@/components/pca-explanation";
 import { type AnalysisResult } from "@shared/schema";
 
 class Visualization3DErrorBoundary extends Component<
@@ -128,6 +129,10 @@ export default function Home() {
             <Visualization3DErrorBoundary>
               <Visualization3D analysisResult={analysisResult} />
             </Visualization3DErrorBoundary>
+
+            <div className="mt-8">
+              <PCAExplanation analysisResult={analysisResult} />
+            </div>
           </section>
         )}
 
