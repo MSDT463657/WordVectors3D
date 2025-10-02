@@ -40,60 +40,116 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (normA * normB);
 }
 
-function performPCA(embeddings: number[][], targetDim: number = 3) {
+// Normalize vector to unit length
+function normalizeVector(vec: number[]): number[] {
+  const norm = Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
+  return norm > 0 ? vec.map(val => val / norm) : vec;
+}
+
+// Classical MDS (Multi-Dimensional Scaling) using cosine distances
+// This preserves pairwise distances better than the old chunk-based approach
+function performMDS(embeddings: number[][], targetDim: number = 3) {
   const numSamples = embeddings.length;
   const numFeatures = embeddings[0].length;
   
-  // Center the data
-  const mean = new Array(numFeatures).fill(0);
+  // Normalize all embeddings to unit length (for cosine distance)
+  const normalized = embeddings.map(normalizeVector);
+  
+  // Compute distance matrix using cosine distance (1 - cosine similarity)
+  const distanceMatrix: number[][] = [];
   for (let i = 0; i < numSamples; i++) {
-    for (let j = 0; j < numFeatures; j++) {
-      mean[j] += embeddings[i][j];
+    distanceMatrix[i] = [];
+    for (let j = 0; j < numSamples; j++) {
+      if (i === j) {
+        distanceMatrix[i][j] = 0;
+      } else {
+        const cosSim = cosineSimilarity(normalized[i], normalized[j]);
+        // Convert cosine similarity to distance (0 to 2 range)
+        distanceMatrix[i][j] = 1 - cosSim;
+      }
     }
   }
-  for (let j = 0; j < numFeatures; j++) {
-    mean[j] /= numSamples;
-  }
-
-  const centeredData = embeddings.map(row => 
-    row.map((val, idx) => val - mean[idx])
+  
+  // Classical MDS: Double centering of squared distance matrix
+  const squaredDist: number[][] = distanceMatrix.map(row => 
+    row.map(d => d * d)
   );
-
-  // Simplified projection approach for educational visualization
-  // Uses dimension chunks to approximate principal components
-  const chunkSize = Math.floor(numFeatures / targetDim);
-  const coordinates = [];
-  const variances = [];
+  
+  // Compute row and overall means
+  const rowMeans = squaredDist.map(row => 
+    row.reduce((sum, val) => sum + val, 0) / numSamples
+  );
+  const overallMean = rowMeans.reduce((sum, val) => sum + val, 0) / numSamples;
+  
+  // Double center: B = -0.5 * (D² - rowMean - colMean + overallMean)
+  const B: number[][] = [];
+  for (let i = 0; i < numSamples; i++) {
+    B[i] = [];
+    for (let j = 0; j < numSamples; j++) {
+      B[i][j] = -0.5 * (squaredDist[i][j] - rowMeans[i] - rowMeans[j] + overallMean);
+    }
+  }
+  
+  // Simple power iteration to find top eigenvectors
+  const coordinates: Array<{x: number, y: number, z: number}> = [];
+  const eigenvalues: number[] = [];
   
   for (let dim = 0; dim < targetDim; dim++) {
-    const start = dim * chunkSize;
-    const end = dim === targetDim - 1 ? numFeatures : (dim + 1) * chunkSize;
+    // Initialize random vector
+    let eigenvector = new Array(numSamples).fill(0).map(() => Math.random() - 0.5);
     
-    // Calculate projection and variance for this dimension
-    let variance = 0;
-    for (let i = 0; i < numSamples; i++) {
-      const chunk = centeredData[i].slice(start, end);
-      // Normalize by sqrt of chunk length to handle different dimensionalities
-      const projection = chunk.reduce((sum, val) => sum + val, 0) / Math.sqrt(chunk.length);
+    // Power iteration
+    for (let iter = 0; iter < 100; iter++) {
+      const newVec = new Array(numSamples).fill(0);
       
+      // Multiply B * eigenvector
+      for (let i = 0; i < numSamples; i++) {
+        for (let j = 0; j < numSamples; j++) {
+          newVec[i] += B[i][j] * eigenvector[j];
+        }
+      }
+      
+      // Normalize
+      const norm = Math.sqrt(newVec.reduce((sum, val) => sum + val * val, 0));
+      eigenvector = norm > 0 ? newVec.map(val => val / norm) : newVec;
+    }
+    
+    // Calculate eigenvalue (Rayleigh quotient)
+    let eigenvalue = 0;
+    for (let i = 0; i < numSamples; i++) {
+      let sum = 0;
+      for (let j = 0; j < numSamples; j++) {
+        sum += B[i][j] * eigenvector[j];
+      }
+      eigenvalue += eigenvector[i] * sum;
+    }
+    eigenvalues.push(Math.max(0, eigenvalue));
+    
+    // Store coordinate (scaled by sqrt of eigenvalue)
+    const scale = Math.sqrt(Math.max(0, eigenvalue));
+    for (let i = 0; i < numSamples; i++) {
       if (!coordinates[i]) {
         coordinates[i] = { x: 0, y: 0, z: 0 };
       }
-      
-      if (dim === 0) coordinates[i].x = projection;
-      else if (dim === 1) coordinates[i].y = projection;
-      else if (dim === 2) coordinates[i].z = projection;
-      
-      variance += projection * projection;
+      const coord = eigenvector[i] * scale;
+      if (dim === 0) coordinates[i].x = coord;
+      else if (dim === 1) coordinates[i].y = coord;
+      else if (dim === 2) coordinates[i].z = coord;
     }
-    variances.push(variance / numSamples);
+    
+    // Deflate B for next dimension
+    for (let i = 0; i < numSamples; i++) {
+      for (let j = 0; j < numSamples; j++) {
+        B[i][j] -= eigenvalue * eigenvector[i] * eigenvector[j];
+      }
+    }
   }
   
-  // Calculate total variance and percentages
-  const totalVariance = variances.reduce((sum, v) => sum + v, 0);
+  // Calculate variance explained
+  const totalVariance = eigenvalues.reduce((sum, v) => sum + v, 0);
   const varianceExplained = totalVariance > 0 
-    ? variances.map(v => (v / totalVariance) * 100)
-    : variances.map(() => 100 / targetDim);
+    ? eigenvalues.map(v => (v / totalVariance) * 100)
+    : eigenvalues.map(() => 100 / targetDim);
 
   return {
     coordinates,
@@ -101,7 +157,7 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
       originalDimensions: numFeatures,
       reducedDimensions: targetDim,
       varianceExplained: varianceExplained.map(v => Math.round(v * 10) / 10),
-      method: "simplified_projection"
+      method: "MDS (cosine distance)"
     }
   };
 }
@@ -145,16 +201,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Perform PCA for 3D visualization
+      // Perform MDS for 3D visualization (preserves cosine distances)
       const embeddingVectors = embeddings.map(e => e.embedding);
-      const pcaResult = performPCA(embeddingVectors);
+      const mdsResult = performMDS(embeddingVectors);
       
       const visualization = {
         coordinates: embeddings.map((e, index) => ({
           word: e.word,
-          ...pcaResult.coordinates[index],
+          ...mdsResult.coordinates[index],
         })),
-        pcaInfo: pcaResult.pcaInfo,
+        pcaInfo: mdsResult.pcaInfo,
       };
 
       const result: AnalysisResult = {

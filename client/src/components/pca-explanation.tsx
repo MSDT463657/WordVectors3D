@@ -29,8 +29,8 @@ export default function PCAExplanation({ analysisResult }: PCAExplanationProps) 
             <h3 className="font-semibold text-foreground mb-2">How Dimensionality Reduction Works</h3>
             <p className="text-sm text-muted-foreground mb-2">
               Word embeddings from <strong>{modelName}</strong> exist in {pcaInfo.originalDimensions}-dimensional space, 
-              which humans can't visualize. We use a technique called <strong>PCA (Principal Component Analysis)</strong> to 
-              project these high-dimensional vectors into 3D space while preserving as much information as possible.
+              which humans can't visualize. We use <strong>Multi-Dimensional Scaling (MDS)</strong> to 
+              project these high-dimensional vectors into 3D space while preserving the distances between words based on their cosine similarity.
             </p>
             <p className="text-xs text-muted-foreground/80">
               Model: {modelName} ({pcaInfo.originalDimensions} dimensions)
@@ -118,9 +118,9 @@ export default function PCAExplanation({ analysisResult }: PCAExplanationProps) 
       {/* Key Insight */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 rounded-lg border border-primary/20">
         <p className="text-sm text-foreground">
-          <strong>💡 Key Insight:</strong> Words that are closer together in the 3D visualization had similar 
-          embeddings in the original {pcaInfo.originalDimensions}-dimensional space. This means they have 
-          similar meanings or are used in similar contexts!
+          <strong>💡 Key Insight:</strong> The distances between words in this 3D visualization accurately reflect 
+          their cosine similarity scores from Step 2. Words that are closer together have higher similarity scores, 
+          meaning they have similar meanings or are used in similar contexts!
         </p>
       </div>
     </div>
