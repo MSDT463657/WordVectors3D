@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, Component, ErrorInfo, ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -7,6 +7,33 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { ZoomIn, RotateCcw, Undo, Info, Eye, EyeOff } from "lucide-react";
 import { type AnalysisResult } from "@shared/schema";
+
+// Error boundary specifically for WebGL/Canvas errors
+class CanvasErrorBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; onError: () => void }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.log('Canvas error caught:', error.message);
+    this.props.onError();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
 
 interface Visualization3DProps {
   analysisResult: AnalysisResult;
@@ -153,18 +180,55 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
   const [webglError, setWebglError] = useState(false);
+  const [webglReady, setWebglReady] = useState(false);
   const [canvasKey] = useState(0);
 
-  // Catch WebGL context issues early
+  // Test WebGL stability before rendering
   useEffect(() => {
-    // Check for WebGL support
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    let timeoutId: NodeJS.Timeout;
     
-    if (!gl) {
-      console.error('WebGL not supported');
-      setWebglError(true);
-    }
+    const testWebGL = () => {
+      try {
+        const testCanvas = document.createElement('canvas');
+        const gl = (testCanvas.getContext('webgl', { 
+          failIfMajorPerformanceCaveat: false,
+          powerPreference: 'low-power'
+        }) || testCanvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+        
+        if (!gl) {
+          setWebglError(true);
+          return;
+        }
+
+        // Test if context immediately fails
+        const contextLostHandler = () => {
+          console.log('WebGL context unstable, disabling 3D');
+          setWebglError(true);
+        };
+        
+        testCanvas.addEventListener('webglcontextlost', contextLostHandler);
+        
+        // Wait a bit to see if context is stable
+        timeoutId = setTimeout(() => {
+          testCanvas.removeEventListener('webglcontextlost', contextLostHandler);
+          if (gl && !gl.isContextLost()) {
+            console.log('WebGL stable, ready to render');
+            setWebglReady(true);
+          } else {
+            setWebglError(true);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('WebGL test failed:', error);
+        setWebglError(true);
+      }
+    };
+
+    testWebGL();
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
@@ -205,46 +269,53 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
               </p>
             </div>
           </div>
-        ) : (
-          <div 
-            style={{ width: '100%', height: '100%' }}
-            onError={(e) => {
-              e.preventDefault();
-              setWebglError(true);
-            }}
-          >
-            <Canvas 
-              key={canvasKey}
-              camera={{ position: [5, 5, 5], fov: 60 }}
-              gl={{ 
-                powerPreference: "low-power",
-                antialias: false,
-                preserveDrawingBuffer: true,
-                failIfMajorPerformanceCaveat: false
-              }}
-              onCreated={({ gl }) => {
-                console.log('WebGL context created successfully');
-                
-                // Handle context loss at the canvas level
-                const canvas = gl.domElement;
-                canvas.addEventListener('webglcontextlost', (e) => {
-                  e.preventDefault();
-                  console.log('WebGL context lost, setting error state');
-                  setWebglError(true);
-                }, false);
-              }}
-              onError={(error) => {
-                console.error('3D Visualization error:', error);
-                setWebglError(true);
-              }}
-            >
-              <Scene 
-                analysisResult={analysisResult} 
-                autoRotate={autoRotate}
-                showConnections={showConnections}
-              />
-            </Canvas>
+        ) : !webglReady ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-8">
+              <div className="animate-pulse mb-4">
+                <div className="h-12 w-12 bg-primary/20 rounded-full mx-auto"></div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Initializing 3D visualization...
+              </p>
+            </div>
           </div>
+        ) : (
+          <CanvasErrorBoundary onError={() => setWebglError(true)}>
+            <div style={{ width: '100%', height: '100%' }}>
+              <Canvas 
+                key={canvasKey}
+                camera={{ position: [5, 5, 5], fov: 60 }}
+                gl={{ 
+                  powerPreference: "low-power",
+                  antialias: false,
+                  preserveDrawingBuffer: true,
+                  failIfMajorPerformanceCaveat: false
+                }}
+                onCreated={({ gl }) => {
+                  console.log('WebGL context created successfully');
+                  
+                  // Handle context loss at the canvas level
+                  const canvas = gl.domElement;
+                  canvas.addEventListener('webglcontextlost', (e) => {
+                    e.preventDefault();
+                    console.log('WebGL context lost, setting error state');
+                    setWebglError(true);
+                  }, false);
+                }}
+                onError={(error) => {
+                  console.error('3D Visualization error:', error);
+                  setWebglError(true);
+                }}
+              >
+                <Scene 
+                  analysisResult={analysisResult} 
+                  autoRotate={autoRotate}
+                  showConnections={showConnections}
+                />
+              </Canvas>
+            </div>
+          </CanvasErrorBoundary>
         )}
 
         {/* Control Panel Overlay */}
