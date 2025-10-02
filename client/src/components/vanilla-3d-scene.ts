@@ -166,9 +166,11 @@ export class Vanilla3DScene {
     }
 
     // Add word points with larger, more visible spheres and rotating text labels
+    const sphereColors = [0xff0000, 0x0000ff, 0x00ff00, 0xffff00]; // Red, Blue, Green, Yellow
+    
     scaledCoordinates.forEach((coord, index) => {
       const geometry = new THREE.SphereGeometry(0.4, 32, 32); // Increased size from 0.15 to 0.4
-      const color = new THREE.Color(`hsl(${(index * 80) % 360}, 75%, 55%)`); // More vibrant colors
+      const color = new THREE.Color(sphereColors[index % sphereColors.length]);
       const material = new THREE.MeshStandardMaterial({ 
         color,
         metalness: 0.3,
