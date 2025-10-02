@@ -155,7 +155,9 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
     eigenvectors.push([...eigenvector]);
     
     // Store coordinate (scaled by sqrt of eigenvalue)
-    const scale = Math.sqrt(finalEigenvalue);
+    // For Z-axis (3rd dimension), boost the scale to ensure visible depth
+    const baseScale = Math.sqrt(finalEigenvalue);
+    const scale = dim === 2 ? baseScale * 2.5 : baseScale; // Boost Z-axis by 2.5x
     
     for (let i = 0; i < numSamples; i++) {
       if (!coordinates[i]) {
@@ -164,11 +166,7 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
       const coord = eigenvector[i] * scale;
       if (dim === 0) coordinates[i].x = coord;
       else if (dim === 1) coordinates[i].y = coord;
-      else if (dim === 2) {
-        // For Z-axis, add extra variation based on distance from first word
-        const distanceFromFirst = distanceMatrix[i][0];
-        coordinates[i].z = coord * 5 + distanceFromFirst * 3; // Scale up and add distance component
-      }
+      else if (dim === 2) coordinates[i].z = coord;
     }
   }
   
