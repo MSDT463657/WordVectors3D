@@ -168,9 +168,14 @@ export class Vanilla3DScene {
     // Add word points with larger, more visible spheres and rotating text labels
     const sphereColors = [0xff0000, 0x00ff00, 0xffff00, 0x00ffff]; // Bright Red, Bright Green, Bright Yellow, Bright Blue (cyan)
     
+    // Track word colors for connector blending
+    const wordColors = new Map<string, THREE.Color>();
+    
     scaledCoordinates.forEach((coord, index) => {
       const geometry = new THREE.SphereGeometry(0.4, 32, 32); // Increased size from 0.15 to 0.4
       const color = new THREE.Color(sphereColors[index % sphereColors.length]);
+      wordColors.set(coord.word, color);
+      
       const material = new THREE.MeshStandardMaterial({ 
         color,
         emissive: color,
@@ -204,13 +209,21 @@ export class Vanilla3DScene {
         
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         
-        // Color based on similarity strength
-        const colorValue = sim.similarity >= 0.7 ? 0x06b6d4 : sim.similarity >= 0.4 ? 0x3b82f6 : 0x6b7280;
+        // Blend the colors of the two connected words
+        const color1 = wordColors.get(sim.word1);
+        const color2 = wordColors.get(sim.word2);
+        const blendedColor = new THREE.Color();
+        
+        if (color1 && color2) {
+          blendedColor.r = (color1.r + color2.r) / 2;
+          blendedColor.g = (color1.g + color2.g) / 2;
+          blendedColor.b = (color1.b + color2.b) / 2;
+        }
         
         // Make lines more visible with higher base opacity
         const material = new THREE.LineBasicMaterial({
-          color: colorValue,
-          opacity: Math.max(0.5, sim.similarity * 0.9), // Increased visibility
+          color: blendedColor,
+          opacity: Math.max(0.6, sim.similarity * 0.9), // Increased visibility
           transparent: true,
           linewidth: 2 // Note: may not work in all browsers/WebGL implementations
         });
