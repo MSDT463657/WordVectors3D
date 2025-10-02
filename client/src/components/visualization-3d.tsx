@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -79,6 +79,15 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
   const [renderError, setRenderError] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
+  
+  // Delay Canvas mounting to next tick to avoid synchronous errors
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCanvasReady(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -113,12 +122,22 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
               </Button>
             </div>
           </div>
+        ) : !canvasReady ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-8">
+              <div className="animate-pulse mb-4">
+                <div className="h-12 w-12 bg-primary/20 rounded-full mx-auto"></div>
+              </div>
+              <p className="text-sm text-muted-foreground">Initializing 3D engine...</p>
+            </div>
+          </div>
         ) : (
           <>
             <Canvas
               camera={{ position: [5, 5, 5], fov: 60 }}
               onError={() => setRenderError(true)}
               gl={{ preserveDrawingBuffer: true }}
+              frameloop="demand"
             >
               <Suspense fallback={null}>
                 <Scene analysisResult={analysisResult} showConnections={showConnections} />
