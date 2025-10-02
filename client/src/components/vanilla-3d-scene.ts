@@ -30,19 +30,19 @@ export class Vanilla3DScene {
   private createTextSprite(text: string, color: THREE.Color): THREE.Sprite {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d')!;
-    canvas.width = 256;
-    canvas.height = 128;
+    canvas.width = 512;
+    canvas.height = 256;
     
-    context.fillStyle = `rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255})`;
-    context.font = 'Bold 48px Arial';
+    context.fillStyle = 'rgb(255, 255, 255)'; // White text
+    context.font = 'Bold 96px Arial'; // Bigger font
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.fillText(text, 128, 64);
+    context.fillText(text, 256, 128);
     
     const texture = new THREE.CanvasTexture(canvas);
     const material = new THREE.SpriteMaterial({ map: texture });
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(2, 1, 1);
+    sprite.scale.set(4, 2, 1); // Bigger scale
     
     return sprite;
   }
