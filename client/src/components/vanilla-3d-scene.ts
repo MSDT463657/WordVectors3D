@@ -11,6 +11,7 @@ export class Vanilla3DScene {
   private container: HTMLElement;
   private rotationAngle: number = 0;
   private autoRotateEnabled: boolean = false;
+  private axes: THREE.Line[] = [];
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -87,6 +88,7 @@ export class Vanilla3DScene {
       const xAxisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Pure red
       const xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
       this.scene.add(xAxis);
+      this.axes.push(xAxis);
       
       // Y-axis (GREEN)
       const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([
@@ -96,6 +98,7 @@ export class Vanilla3DScene {
       const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 }); // Pure green
       const yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
       this.scene.add(yAxis);
+      this.axes.push(yAxis);
       
       // Z-axis (BLUE)
       const zAxisGeometry = new THREE.BufferGeometry().setFromPoints([
@@ -105,6 +108,7 @@ export class Vanilla3DScene {
       const zAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff }); // Pure blue
       const zAxis = new THREE.Line(zAxisGeometry, zAxisMaterial);
       this.scene.add(zAxis);
+      this.axes.push(zAxis);
 
       return true;
     } catch (error) {
@@ -117,6 +121,10 @@ export class Vanilla3DScene {
     // Clear existing objects (except lights and axes)
     const objectsToRemove: THREE.Object3D[] = [];
     this.scene.children.forEach(child => {
+      // Skip axes - we want to keep them
+      if (this.axes.includes(child as THREE.Line)) {
+        return;
+      }
       if (child.type === 'Mesh' || child.type === 'Line' || child.type === 'Group') {
         objectsToRemove.push(child);
       }
