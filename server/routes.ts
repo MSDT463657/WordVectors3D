@@ -155,7 +155,10 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
     eigenvectors.push([...eigenvector]);
     
     // Store coordinate (scaled by sqrt of eigenvalue)
-    const scale = Math.sqrt(finalEigenvalue);
+    // For Z-axis (3rd dimension), boost the scale to ensure visible depth
+    const baseScale = Math.sqrt(finalEigenvalue);
+    const scale = dim === 2 ? baseScale * 2.5 : baseScale; // Boost Z-axis by 2.5x
+    
     for (let i = 0; i < numSamples; i++) {
       if (!coordinates[i]) {
         coordinates[i] = { x: 0, y: 0, z: 0 };
