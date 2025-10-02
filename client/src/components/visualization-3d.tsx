@@ -206,36 +206,45 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
             </div>
           </div>
         ) : (
-          <Canvas 
-            key={canvasKey}
-            camera={{ position: [5, 5, 5], fov: 60 }}
-            gl={{ 
-              powerPreference: "low-power",
-              antialias: false,
-              preserveDrawingBuffer: true
-            }}
-            onCreated={({ gl }) => {
-              console.log('WebGL context created successfully');
-              
-              // Handle context loss at the canvas level
-              const canvas = gl.domElement;
-              canvas.addEventListener('webglcontextlost', (e) => {
-                e.preventDefault();
-                console.log('WebGL context lost, setting error state');
-                setWebglError(true);
-              }, false);
-            }}
-            onError={(error) => {
-              console.error('3D Visualization error:', error);
+          <div 
+            style={{ width: '100%', height: '100%' }}
+            onError={(e) => {
+              e.preventDefault();
               setWebglError(true);
             }}
           >
-            <Scene 
-              analysisResult={analysisResult} 
-              autoRotate={autoRotate}
-              showConnections={showConnections}
-            />
-          </Canvas>
+            <Canvas 
+              key={canvasKey}
+              camera={{ position: [5, 5, 5], fov: 60 }}
+              gl={{ 
+                powerPreference: "low-power",
+                antialias: false,
+                preserveDrawingBuffer: true,
+                failIfMajorPerformanceCaveat: false
+              }}
+              onCreated={({ gl }) => {
+                console.log('WebGL context created successfully');
+                
+                // Handle context loss at the canvas level
+                const canvas = gl.domElement;
+                canvas.addEventListener('webglcontextlost', (e) => {
+                  e.preventDefault();
+                  console.log('WebGL context lost, setting error state');
+                  setWebglError(true);
+                }, false);
+              }}
+              onError={(error) => {
+                console.error('3D Visualization error:', error);
+                setWebglError(true);
+              }}
+            >
+              <Scene 
+                analysisResult={analysisResult} 
+                autoRotate={autoRotate}
+                showConnections={showConnections}
+              />
+            </Canvas>
+          </div>
         )}
 
         {/* Control Panel Overlay */}
