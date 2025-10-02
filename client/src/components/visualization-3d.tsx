@@ -1,23 +1,84 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { ZoomIn, Undo, Info, Eye, EyeOff } from "lucide-react";
+import { ZoomIn, Undo, Info, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import { type AnalysisResult } from "@shared/schema";
+import * as THREE from "three";
 
 interface Visualization3DProps {
   analysisResult: AnalysisResult;
+}
+
+// 3D Scene component
+function Scene({ analysisResult, showConnections }: { analysisResult: AnalysisResult; showConnections: boolean }) {
+  const { coordinates } = analysisResult.visualization;
+  
+  const scaledCoordinates = coordinates.map(coord => ({
+    ...coord,
+    x: coord.x * 5,
+    y: coord.y * 5,
+    z: coord.z * 5,
+  }));
+
+  return (
+    <>
+      <OrbitControls enablePan enableZoom enableRotate autoRotate autoRotateSpeed={2} />
+      <ambientLight intensity={0.6} />
+      <pointLight position={[10, 10, 10]} />
+      <axesHelper args={[3]} />
+      
+      {scaledCoordinates.map((coord, index) => (
+        <group key={coord.word} position={[coord.x, coord.y, coord.z]}>
+          <mesh>
+            <sphereGeometry args={[0.15, 32, 32]} />
+            <meshStandardMaterial color={`hsl(${(index * 60) % 360}, 70%, 50%)`} />
+          </mesh>
+          <sprite position={[0, 0.4, 0]} scale={[1, 0.3, 1]}>
+            <spriteMaterial color="white" />
+          </sprite>
+        </group>
+      ))}
+      
+      {showConnections && analysisResult.similarities.map((sim, index) => {
+        const word1Coord = scaledCoordinates.find(c => c.word === sim.word1);
+        const word2Coord = scaledCoordinates.find(c => c.word === sim.word2);
+        
+        if (!word1Coord || !word2Coord) return null;
+
+        const points = [
+          new THREE.Vector3(word1Coord.x, word1Coord.y, word1Coord.z),
+          new THREE.Vector3(word2Coord.x, word2Coord.y, word2Coord.z),
+        ];
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const color = sim.similarity >= 0.7 ? "#06b6d4" : sim.similarity >= 0.4 ? "#3b82f6" : "#6b7280";
+        
+        return (
+          <primitive
+            key={index}
+            object={new THREE.Line(
+              geometry,
+              new THREE.LineBasicMaterial({
+                color,
+                opacity: Math.max(0.3, sim.similarity),
+                transparent: true
+              })
+            )}
+          />
+        );
+      })}
+    </>
+  );
 }
 
 export default function Visualization3D({ analysisResult }: Visualization3DProps) {
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
-  // Disable 3D by default - user can enable if their environment supports it
-  const [webglError, setWebglError] = useState(true);
-  const [webglReady, setWebglReady] = useState(false);
-  const [canvasKey] = useState(0);
-  const [user3DEnabled, setUser3DEnabled] = useState(false);
+  const [renderError, setRenderError] = useState(false);
 
   return (
     <>
@@ -42,78 +103,51 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
       </div>
 
       {/* 3D Canvas Container */}
-      <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        <div className="w-full h-full p-8 flex items-center justify-center">
-          <svg viewBox="-300 -300 600 600" className="w-full h-full max-w-2xl">
-            {/* Grid background */}
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
-              </pattern>
-            </defs>
-            <rect x="-300" y="-300" width="600" height="600" fill="url(#grid)" />
+      <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 rounded-lg overflow-hidden">
+        {renderError ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-8">
+              <p className="text-muted-foreground mb-4">Unable to load 3D visualization</p>
+              <Button onClick={() => window.location.reload()} data-testid="button-reload">
+                Reload Page
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Canvas
+              camera={{ position: [5, 5, 5], fov: 60 }}
+              onError={() => setRenderError(true)}
+              gl={{ preserveDrawingBuffer: true }}
+            >
+              <Suspense fallback={null}>
+                <Scene analysisResult={analysisResult} showConnections={showConnections} />
+              </Suspense>
+            </Canvas>
             
-            {/* Axes */}
-            <line x1="-300" y1="0" x2="300" y2="0" stroke="#9ca3af" strokeWidth="2" />
-            <line x1="0" y1="-300" x2="0" y2="300" stroke="#9ca3af" strokeWidth="2" />
-            
-            {/* Axis labels */}
-            <text x="280" y="-10" fill="#6b7280" fontSize="14" fontFamily="sans-serif">X (PC1)</text>
-            <text x="10" y="-280" fill="#6b7280" fontSize="14" fontFamily="sans-serif">Y (PC2)</text>
-            
-            {/* Connection lines */}
-            {showConnections && analysisResult.similarities.map((sim, idx) => {
-              const word1 = analysisResult.visualization.coordinates.find(c => c.word === sim.word1);
-              const word2 = analysisResult.visualization.coordinates.find(c => c.word === sim.word2);
-              if (!word1 || !word2) return null;
-              
-              const x1 = word1.x * 80;
-              const y1 = -word1.y * 80;
-              const x2 = word2.x * 80;
-              const y2 = -word2.y * 80;
-              
-              const color = sim.similarity >= 0.7 ? "#06b6d4" : sim.similarity >= 0.4 ? "#3b82f6" : "#9ca3af";
-              const opacity = Math.max(0.3, sim.similarity);
-              
-              return (
-                <line
-                  key={idx}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke={color}
-                  strokeWidth="2"
-                  opacity={opacity}
-                />
-              );
-            })}
-            
-            {/* Word points */}
-            {analysisResult.visualization.coordinates.map((coord, idx) => {
-              const x = coord.x * 80;
-              const y = -coord.y * 80;
-              const color = `hsl(${(idx * 60) % 360}, 70%, 50%)`;
-              
-              return (
-                <g key={coord.word}>
-                  <circle cx={x} cy={y} r="20" fill={color} opacity="0.9" />
-                  <text
-                    x={x}
-                    y={y + 35}
-                    textAnchor="middle"
-                    fill="#1f2937"
-                    fontSize="16"
-                    fontWeight="600"
-                    fontFamily="sans-serif"
+            {/* Word labels overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+              {analysisResult.visualization.coordinates.map((coord, idx) => {
+                const x = 50 + (coord.x * 8);
+                const y = 50 - (coord.y * 8);
+                
+                return (
+                  <div
+                    key={coord.word}
+                    className="absolute text-foreground font-semibold text-sm bg-background/80 px-2 py-1 rounded"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)'
+                    }}
                   >
                     {coord.word}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Control Panel Overlay */}
         <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-lg p-4 rounded-lg shadow-lg border">
