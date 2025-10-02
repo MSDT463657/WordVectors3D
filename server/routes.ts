@@ -90,22 +90,47 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
     }
   }
   
-  // Simple power iteration to find top eigenvectors
+  // Power iteration with Gram-Schmidt orthogonalization to find eigenvectors
   const coordinates: Array<{x: number, y: number, z: number}> = [];
   const eigenvalues: number[] = [];
+  const eigenvectors: number[][] = [];
   
   for (let dim = 0; dim < targetDim; dim++) {
     // Initialize random vector
     let eigenvector = new Array(numSamples).fill(0).map(() => Math.random() - 0.5);
     
+    // Orthogonalize against previously found eigenvectors (Gram-Schmidt)
+    for (let prevDim = 0; prevDim < dim; prevDim++) {
+      const prevVec = eigenvectors[prevDim];
+      let dotProduct = 0;
+      for (let i = 0; i < numSamples; i++) {
+        dotProduct += eigenvector[i] * prevVec[i];
+      }
+      for (let i = 0; i < numSamples; i++) {
+        eigenvector[i] -= dotProduct * prevVec[i];
+      }
+    }
+    
     // Power iteration
-    for (let iter = 0; iter < 100; iter++) {
+    for (let iter = 0; iter < 150; iter++) {
       const newVec = new Array(numSamples).fill(0);
       
       // Multiply B * eigenvector
       for (let i = 0; i < numSamples; i++) {
         for (let j = 0; j < numSamples; j++) {
           newVec[i] += B[i][j] * eigenvector[j];
+        }
+      }
+      
+      // Orthogonalize against previous eigenvectors
+      for (let prevDim = 0; prevDim < dim; prevDim++) {
+        const prevVec = eigenvectors[prevDim];
+        let dotProduct = 0;
+        for (let i = 0; i < numSamples; i++) {
+          dotProduct += newVec[i] * prevVec[i];
+        }
+        for (let i = 0; i < numSamples; i++) {
+          newVec[i] -= dotProduct * prevVec[i];
         }
       }
       
@@ -123,10 +148,14 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
       }
       eigenvalue += eigenvector[i] * sum;
     }
-    eigenvalues.push(Math.max(0, eigenvalue));
+    
+    // Ensure eigenvalue is positive
+    const finalEigenvalue = Math.max(0.001, eigenvalue);
+    eigenvalues.push(finalEigenvalue);
+    eigenvectors.push([...eigenvector]);
     
     // Store coordinate (scaled by sqrt of eigenvalue)
-    const scale = Math.sqrt(Math.max(0, eigenvalue));
+    const scale = Math.sqrt(finalEigenvalue);
     for (let i = 0; i < numSamples; i++) {
       if (!coordinates[i]) {
         coordinates[i] = { x: 0, y: 0, z: 0 };
@@ -135,13 +164,6 @@ function performMDS(embeddings: number[][], targetDim: number = 3) {
       if (dim === 0) coordinates[i].x = coord;
       else if (dim === 1) coordinates[i].y = coord;
       else if (dim === 2) coordinates[i].z = coord;
-    }
-    
-    // Deflate B for next dimension
-    for (let i = 0; i < numSamples; i++) {
-      for (let j = 0; j < numSamples; j++) {
-        B[i][j] -= eigenvalue * eigenvector[i] * eigenvector[j];
-      }
     }
   }
   
