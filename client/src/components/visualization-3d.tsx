@@ -1,178 +1,12 @@
-import { useRef, useEffect, useState, Component, ErrorInfo, ReactNode } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Text } from "@react-three/drei";
-import * as THREE from "three";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { ZoomIn, RotateCcw, Undo, Info, Eye, EyeOff } from "lucide-react";
+import { ZoomIn, Undo, Info, Eye, EyeOff } from "lucide-react";
 import { type AnalysisResult } from "@shared/schema";
-
-// Error boundary specifically for WebGL/Canvas errors
-class CanvasErrorBoundary extends Component<
-  { children: ReactNode; onError: () => void },
-  { hasError: boolean }
-> {
-  constructor(props: { children: ReactNode; onError: () => void }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.log('Canvas error caught:', error.message);
-    this.props.onError();
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return null;
-    }
-    return this.props.children;
-  }
-}
 
 interface Visualization3DProps {
   analysisResult: AnalysisResult;
-}
-
-function WordPoint({ 
-  word, 
-  position, 
-  color = "#3b82f6" 
-}: { 
-  word: string; 
-  position: [number, number, number]; 
-  color?: string; 
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = meshRef.current.rotation.y += 0.01;
-    }
-  });
-
-  return (
-    <group position={position}>
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[0.1, 32, 32]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-      <Text
-        position={[0, 0.3, 0]}
-        fontSize={0.2}
-        color="black"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {word}
-      </Text>
-    </group>
-  );
-}
-
-function ConnectionLines({ 
-  coordinates, 
-  similarities, 
-  showConnections 
-}: { 
-  coordinates: Array<{ word: string; x: number; y: number; z: number }>; 
-  similarities: Array<{ word1: string; word2: string; similarity: number }>;
-  showConnections: boolean;
-}) {
-  if (!showConnections) return null;
-
-  return (
-    <>
-      {similarities.map((sim, index) => {
-        const word1Coord = coordinates.find(c => c.word === sim.word1);
-        const word2Coord = coordinates.find(c => c.word === sim.word2);
-        
-        if (!word1Coord || !word2Coord) return null;
-
-        const points = [
-          new THREE.Vector3(word1Coord.x, word1Coord.y, word1Coord.z),
-          new THREE.Vector3(word2Coord.x, word2Coord.y, word2Coord.z),
-        ];
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        
-        const getLineColor = (similarity: number) => {
-          if (similarity >= 0.7) return "#06b6d4"; // accent
-          if (similarity >= 0.4) return "#3b82f6"; // primary  
-          return "#6b7280"; // muted
-        };
-
-        const opacity = Math.max(0.3, sim.similarity);
-
-        return (
-          <primitive key={index} object={new THREE.Line(geometry, new THREE.LineBasicMaterial({
-            color: getLineColor(sim.similarity),
-            opacity: opacity,
-            transparent: true
-          }))} />
-        );
-      })}
-    </>
-  );
-}
-
-function Scene({ 
-  analysisResult, 
-  autoRotate, 
-  showConnections 
-}: { 
-  analysisResult: AnalysisResult; 
-  autoRotate: boolean;
-  showConnections: boolean;
-}) {
-  const { coordinates } = analysisResult.visualization;
-  
-  // Scale coordinates for better visualization
-  const scaledCoordinates = coordinates.map(coord => ({
-    ...coord,
-    x: coord.x * 5,
-    y: coord.y * 5,
-    z: coord.z * 5,
-  }));
-
-  return (
-    <>
-      <OrbitControls 
-        enablePan={true} 
-        enableZoom={true} 
-        enableRotate={true}
-        autoRotate={autoRotate}
-        autoRotateSpeed={2}
-      />
-      <ambientLight intensity={0.6} />
-      <pointLight position={[10, 10, 10]} />
-      
-      {/* Axes helpers */}
-      <axesHelper args={[3]} />
-      
-      {/* Word points */}
-      {scaledCoordinates.map((coord, index) => (
-        <WordPoint
-          key={coord.word}
-          word={coord.word}
-          position={[coord.x, coord.y, coord.z]}
-          color={`hsl(${(index * 60) % 360}, 70%, 50%)`}
-        />
-      ))}
-      
-      {/* Connection lines */}
-      <ConnectionLines 
-        coordinates={scaledCoordinates}
-        similarities={analysisResult.similarities}
-        showConnections={showConnections}
-      />
-    </>
-  );
 }
 
 export default function Visualization3D({ analysisResult }: Visualization3DProps) {
@@ -209,79 +43,77 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
 
       {/* 3D Canvas Container */}
       <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        {(webglError && !user3DEnabled) ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center p-8 max-w-md">
-              <p className="text-muted-foreground mb-4">
-                💡 3D Visualization Disabled
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                3D visualization is disabled by default to prevent graphics errors in some environments.
-              </p>
-              <Button
-                onClick={() => {
-                  setWebglError(false);
-                  setWebglReady(true);
-                  setUser3DEnabled(true);
-                }}
-                className="mb-3"
-                data-testid="button-enable-3d"
-              >
-                Enable 3D Visualization
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                All word analysis and similarity calculations are working perfectly!
-              </p>
-            </div>
-          </div>
-        ) : !webglReady ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center p-8">
-              <div className="animate-pulse mb-4">
-                <div className="h-12 w-12 bg-primary/20 rounded-full mx-auto"></div>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Initializing 3D visualization...
-              </p>
-            </div>
-          </div>
-        ) : (
-          <CanvasErrorBoundary onError={() => setWebglError(true)}>
-            <div style={{ width: '100%', height: '100%' }}>
-              <Canvas 
-                key={canvasKey}
-                camera={{ position: [5, 5, 5], fov: 60 }}
-                gl={{ 
-                  powerPreference: "low-power",
-                  antialias: false,
-                  preserveDrawingBuffer: true,
-                  failIfMajorPerformanceCaveat: false
-                }}
-                onCreated={({ gl }) => {
-                  console.log('WebGL context created successfully');
-                  
-                  // Handle context loss at the canvas level
-                  const canvas = gl.domElement;
-                  canvas.addEventListener('webglcontextlost', (e) => {
-                    e.preventDefault();
-                    console.log('WebGL context lost, setting error state');
-                    setWebglError(true);
-                  }, false);
-                }}
-                onError={(error) => {
-                  console.error('3D Visualization error:', error);
-                  setWebglError(true);
-                }}
-              >
-                <Scene 
-                  analysisResult={analysisResult} 
-                  autoRotate={autoRotate}
-                  showConnections={showConnections}
+        <div className="w-full h-full p-8 flex items-center justify-center">
+          <svg viewBox="-300 -300 600 600" className="w-full h-full max-w-2xl">
+            {/* Grid background */}
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
+              </pattern>
+            </defs>
+            <rect x="-300" y="-300" width="600" height="600" fill="url(#grid)" />
+            
+            {/* Axes */}
+            <line x1="-300" y1="0" x2="300" y2="0" stroke="#9ca3af" strokeWidth="2" />
+            <line x1="0" y1="-300" x2="0" y2="300" stroke="#9ca3af" strokeWidth="2" />
+            
+            {/* Axis labels */}
+            <text x="280" y="-10" fill="#6b7280" fontSize="14" fontFamily="sans-serif">X (PC1)</text>
+            <text x="10" y="-280" fill="#6b7280" fontSize="14" fontFamily="sans-serif">Y (PC2)</text>
+            
+            {/* Connection lines */}
+            {showConnections && analysisResult.similarities.map((sim, idx) => {
+              const word1 = analysisResult.visualization.coordinates.find(c => c.word === sim.word1);
+              const word2 = analysisResult.visualization.coordinates.find(c => c.word === sim.word2);
+              if (!word1 || !word2) return null;
+              
+              const x1 = word1.x * 80;
+              const y1 = -word1.y * 80;
+              const x2 = word2.x * 80;
+              const y2 = -word2.y * 80;
+              
+              const color = sim.similarity >= 0.7 ? "#06b6d4" : sim.similarity >= 0.4 ? "#3b82f6" : "#9ca3af";
+              const opacity = Math.max(0.3, sim.similarity);
+              
+              return (
+                <line
+                  key={idx}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={color}
+                  strokeWidth="2"
+                  opacity={opacity}
                 />
-              </Canvas>
-            </div>
-          </CanvasErrorBoundary>
-        )}
+              );
+            })}
+            
+            {/* Word points */}
+            {analysisResult.visualization.coordinates.map((coord, idx) => {
+              const x = coord.x * 80;
+              const y = -coord.y * 80;
+              const color = `hsl(${(idx * 60) % 360}, 70%, 50%)`;
+              
+              return (
+                <g key={coord.word}>
+                  <circle cx={x} cy={y} r="20" fill={color} opacity="0.9" />
+                  <text
+                    x={x}
+                    y={y + 35}
+                    textAnchor="middle"
+                    fill="#1f2937"
+                    fontSize="16"
+                    fontWeight="600"
+                    fontFamily="sans-serif"
+                  >
+                    {coord.word}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
 
         {/* Control Panel Overlay */}
         <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-lg p-4 rounded-lg shadow-lg border">
