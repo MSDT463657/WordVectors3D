@@ -1,0 +1,150 @@
+import { useState } from "react";
+import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot } from "lucide-react";
+import WordInput from "@/components/word-input";
+import SimilarityDisplay from "@/components/similarity-display";
+import Visualization3D from "@/components/visualization-3d";
+import { type AnalysisResult } from "@shared/schema";
+
+export default function Home() {
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAnalysisComplete = (result: AnalysisResult) => {
+    setAnalysisResult(result);
+    setIsLoading(false);
+  };
+
+  const handleAnalysisStart = () => {
+    setIsLoading(true);
+    setAnalysisResult(null);
+  };
+
+  const handleAnalysisError = () => {
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="gradient-bg text-white py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <Brain className="text-4xl" size={48} />
+            <h1 className="text-4xl md:text-5xl font-bold">AI Word Vector Visualizer</h1>
+          </div>
+          <p className="text-xl text-white/90 max-w-3xl">
+            Learn how AI understands words through vector embeddings and semantic similarity. 
+            Enter words and see how they relate to each other in 3D space!
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* Educational Introduction */}
+        <section className="info-box p-6 rounded-lg fade-in">
+          <div className="flex items-start gap-4">
+            <Lightbulb className="text-3xl text-accent mt-1" size={32} />
+            <div>
+              <h2 className="text-2xl font-bold mb-3 text-foreground">What are Word Vectors?</h2>
+              <p className="text-foreground/80 mb-3">
+                In AI, words are represented as <strong>vectors</strong> (lists of numbers) in a high-dimensional space. 
+                Words with similar meanings have vectors that point in similar directions.
+              </p>
+              <p className="text-foreground/80">
+                <strong>Cosine similarity</strong> measures how similar two word vectors are, ranging from -1 (opposite) 
+                to 1 (identical). Values close to 1 mean the words are semantically related!
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Input Section */}
+        <section className="bg-card rounded-lg shadow-lg p-6 card-hover fade-in">
+          <div className="flex items-center gap-3 mb-6">
+            <Keyboard className="text-2xl text-primary" size={24} />
+            <h2 className="text-2xl font-bold text-card-foreground">Step 1: Enter Your Words</h2>
+          </div>
+          
+          <WordInput 
+            onAnalysisStart={handleAnalysisStart}
+            onAnalysisComplete={handleAnalysisComplete}
+            onAnalysisError={handleAnalysisError}
+          />
+        </section>
+
+        {/* Vector Calculations Section */}
+        {analysisResult && (
+          <section className="bg-card rounded-lg shadow-lg p-6 fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <Calculator className="text-2xl text-primary" size={24} />
+              <h2 className="text-2xl font-bold text-card-foreground">Step 2: Vector Calculations</h2>
+            </div>
+            
+            <SimilarityDisplay analysisResult={analysisResult} />
+          </section>
+        )}
+
+        {/* 3D Visualization Section */}
+        {analysisResult && (
+          <section className="bg-card rounded-lg shadow-lg p-6 fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <Box className="text-2xl text-primary" size={24} />
+              <h2 className="text-2xl font-bold text-card-foreground">Step 3: 3D Spatial Visualization</h2>
+            </div>
+            
+            <Visualization3D analysisResult={analysisResult} />
+          </section>
+        )}
+
+        {/* How AI Uses This */}
+        <section className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-6 border-2 border-primary/20">
+          <div className="flex items-start gap-4">
+            <Bot className="text-4xl text-primary mt-1" size={48} />
+            <div>
+              <h2 className="text-2xl font-bold mb-3 text-foreground">How AI Uses This for Text Prediction</h2>
+              <div className="space-y-3 text-foreground/80">
+                <p>
+                  <strong>1. Context Understanding:</strong> When AI sees "The quick brown cat jumped over the...", 
+                  it converts each word to vectors and understands the context.
+                </p>
+                <p>
+                  <strong>2. Next Word Prediction:</strong> The AI looks for words with vectors similar to the context. 
+                  Words like "fence" or "wall" would have higher similarity scores than unrelated words like "pizza".
+                </p>
+                <p>
+                  <strong>3. Probability Calculation:</strong> Based on similarity scores and patterns learned from 
+                  billions of examples, the AI assigns probabilities to possible next words and chooses the most likely one.
+                </p>
+                <p className="text-sm bg-white/50 p-3 rounded-lg border-l-4 border-accent">
+                  <strong>Key Insight:</strong> The closer two words are in vector space, the more semantically related 
+                  they are. This is why similar words have high similarity scores while unrelated words don't.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border mt-16 py-8 px-4">
+        <div className="max-w-6xl mx-auto text-center text-muted-foreground">
+          <p className="mb-2">Educational AI Vector Visualizer - Built for learners</p>
+          <p className="text-sm">
+            Powered by OpenAI's text-embedding-3-small model • Three.js for 3D visualization
+          </p>
+        </div>
+      </footer>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-card p-8 rounded-lg shadow-2xl text-center">
+            <div className="loading-spinner mx-auto mb-4"></div>
+            <p className="text-lg font-medium text-foreground">Fetching word embeddings...</p>
+            <p className="text-sm text-muted-foreground mt-2">This may take a few seconds</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
