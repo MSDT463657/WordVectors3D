@@ -2,7 +2,7 @@ import { useState, Component, type ReactNode } from "react";
 import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot, Sparkles, History } from "lucide-react";
 import WordInput from "@/components/word-input";
 import SimilarityDisplay from "@/components/similarity-display";
-import Visualization3D from "@/components/visualization-3d";
+import Visualization3D from "@/components/visualization-3d-vanilla";
 import PCAExplanation from "@/components/pca-explanation";
 import WordPredictionDemo from "@/components/word-prediction-demo";
 import SavedAnalyses from "@/components/saved-analyses";
