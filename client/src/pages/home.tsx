@@ -1,9 +1,42 @@
-import { useState } from "react";
+import { useState, Component, type ReactNode } from "react";
 import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot } from "lucide-react";
 import WordInput from "@/components/word-input";
 import SimilarityDisplay from "@/components/similarity-display";
 import Visualization3D from "@/components/visualization-3d";
 import { type AnalysisResult } from "@shared/schema";
+
+class Visualization3DErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('3D Visualization error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-muted/30 p-8 rounded-lg text-center">
+          <p className="text-muted-foreground mb-2">3D visualization unavailable</p>
+          <p className="text-sm text-muted-foreground">
+            Your environment may not support WebGL. The word analysis results above show the key findings.
+          </p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -92,7 +125,9 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-card-foreground">Step 3: 3D Spatial Visualization</h2>
             </div>
             
-            <Visualization3D analysisResult={analysisResult} />
+            <Visualization3DErrorBoundary>
+              <Visualization3D analysisResult={analysisResult} />
+            </Visualization3DErrorBoundary>
           </section>
         )}
 

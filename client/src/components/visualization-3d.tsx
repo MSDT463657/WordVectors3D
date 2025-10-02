@@ -152,6 +152,7 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
+  const [webglError, setWebglError] = useState(false);
 
   return (
     <>
@@ -177,13 +178,47 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
 
       {/* 3D Canvas Container */}
       <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        <Canvas camera={{ position: [5, 5, 5], fov: 60 }}>
-          <Scene 
-            analysisResult={analysisResult} 
-            autoRotate={autoRotate}
-            showConnections={showConnections}
-          />
-        </Canvas>
+        {!webglError ? (
+          <Canvas 
+            camera={{ position: [5, 5, 5], fov: 60 }}
+            onCreated={({ gl }) => {
+              console.log('WebGL context created successfully');
+            }}
+            onError={(error) => {
+              console.error('WebGL error:', error);
+              setWebglError(true);
+            }}
+            fallback={
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center p-8">
+                  <p className="text-muted-foreground mb-4">
+                    3D visualization requires WebGL support
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your browser or environment may not support WebGL
+                  </p>
+                </div>
+              </div>
+            }
+          >
+            <Scene 
+              analysisResult={analysisResult} 
+              autoRotate={autoRotate}
+              showConnections={showConnections}
+            />
+          </Canvas>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-8">
+              <p className="text-muted-foreground mb-4">
+                Unable to initialize 3D visualization
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please ensure your browser supports WebGL
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Control Panel Overlay */}
         <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-lg p-4 rounded-lg shadow-lg border">
