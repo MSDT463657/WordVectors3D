@@ -9,6 +9,8 @@ export class Vanilla3DScene {
   private controls: OrbitControls | null = null;
   private animationId: number | null = null;
   private container: HTMLElement;
+  private rotationAngle: number = 0;
+  private autoRotateEnabled: boolean = true;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -65,8 +67,8 @@ export class Vanilla3DScene {
       // Setup controls
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
-      this.controls.autoRotate = true;
-      this.controls.autoRotateSpeed = 2;
+      this.controls.autoRotate = false; // We'll do manual Z-axis rotation
+      this.controls.autoRotateSpeed = 0.5;
 
       // Add lights
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -76,9 +78,33 @@ export class Vanilla3DScene {
       pointLight.position.set(10, 10, 10);
       this.scene.add(pointLight);
 
-      // Add axes helper - doubled in length, bisecting at origin
-      const axesHelper = new THREE.AxesHelper(6);
-      this.scene.add(axesHelper);
+      // Add custom axes with correct colors - doubled in length, bisecting at origin
+      // X-axis (RED)
+      const xAxisGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-6, 0, 0),
+        new THREE.Vector3(6, 0, 0)
+      ]);
+      const xAxisMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Pure red
+      const xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
+      this.scene.add(xAxis);
+      
+      // Y-axis (GREEN)
+      const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, -6, 0),
+        new THREE.Vector3(0, 6, 0)
+      ]);
+      const yAxisMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 }); // Pure green
+      const yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
+      this.scene.add(yAxis);
+      
+      // Z-axis (BLUE)
+      const zAxisGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, -6),
+        new THREE.Vector3(0, 0, 6)
+      ]);
+      const zAxisMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff }); // Pure blue
+      const zAxis = new THREE.Line(zAxisGeometry, zAxisMaterial);
+      this.scene.add(zAxis);
 
       return true;
     } catch (error) {
@@ -187,6 +213,16 @@ export class Vanilla3DScene {
 
     const render = () => {
       this.animationId = requestAnimationFrame(render);
+      
+      // Manual rotation around Z-axis (slower and around vertical axis)
+      if (this.autoRotateEnabled && this.controls) {
+        this.rotationAngle += 0.003; // Slow rotation speed
+        const radius = 15;
+        this.camera.position.x = Math.cos(this.rotationAngle) * radius;
+        this.camera.position.y = Math.sin(this.rotationAngle) * radius;
+        // Keep Z position constant (looking from above)
+        this.camera.lookAt(this.controls.target);
+      }
       
       if (this.controls) {
         this.controls.update();
