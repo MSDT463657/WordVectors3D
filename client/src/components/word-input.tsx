@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Key, X, Wand2, Info } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +15,10 @@ interface WordInputProps {
 }
 
 export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnalysisError }: WordInputProps) {
-  const [apiKey, setApiKey] = useState("");
-  const [currentWord, setCurrentWord] = useState("");
-  const [words, setWords] = useState<string[]>([]);
+  const [word1, setWord1] = useState("");
+  const [word2, setWord2] = useState("");
+  const [word3, setWord3] = useState("");
+  const [word4, setWord4] = useState("");
   const { toast } = useToast();
 
   const analyzeMutation = useMutation({
@@ -29,7 +30,7 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
       onAnalysisComplete(result);
       toast({
         title: "Analysis Complete!",
-        description: `Successfully analyzed ${words.length} words and calculated ${result.similarities.length} similarity pairs.`,
+        description: `Successfully analyzed ${result.embeddings.length} words and calculated ${result.similarities.length} similarity pairs.`,
       });
     },
     onError: (error: any) => {
@@ -37,64 +38,16 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
       console.error("Analysis error:", error);
       toast({
         title: "Analysis Failed",
-        description: error.message || "Failed to analyze words. Please check your API key and try again.",
+        description: error.message || "Failed to analyze words. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const addWord = () => {
-    const trimmedWord = currentWord.trim().toLowerCase();
-    if (!trimmedWord) {
-      toast({
-        title: "Invalid Word",
-        description: "Please enter a valid word.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (words.includes(trimmedWord)) {
-      toast({
-        title: "Duplicate Word",
-        description: "This word has already been added.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (words.length >= 4) {
-      toast({
-        title: "Maximum Words Reached",
-        description: "You can only analyze up to 4 words at once.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setWords([...words, trimmedWord]);
-    setCurrentWord("");
-  };
-
-  const removeWord = (index: number) => {
-    setWords(words.filter((_, i) => i !== index));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      addWord();
-    }
-  };
-
   const handleAnalyze = () => {
-    if (!apiKey.trim()) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your OpenAI API key.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const words = [word1, word2, word3, word4]
+      .map(w => w.trim().toLowerCase())
+      .filter(w => w.length > 0);
 
     if (words.length < 2) {
       toast({
@@ -105,95 +58,93 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
       return;
     }
 
+    const uniqueWords = Array.from(new Set(words));
+    if (uniqueWords.length !== words.length) {
+      toast({
+        title: "Duplicate Words",
+        description: "Please enter different words for each input.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onAnalysisStart();
-    analyzeMutation.mutate({ words, apiKey: apiKey.trim() });
+    analyzeMutation.mutate({ words: uniqueWords });
   };
 
   return (
-    <>
-      {/* API Key Input */}
-      <div className="mb-6">
-        <Label htmlFor="api-key" className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-          <Key className="text-muted-foreground" size={16} />
-          OpenAI API Key
-        </Label>
-        <Input
-          id="api-key"
-          type="password"
-          placeholder="sk-..."
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          className="w-full"
-          data-testid="input-api-key"
-        />
-        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-          <Info size={12} />
-          Your API key is used to fetch word embeddings from OpenAI (text-embedding-3-small model)
-        </p>
-      </div>
-
-      {/* Word Input */}
-      <div className="mb-6">
-        <Label htmlFor="word-input" className="block text-sm font-medium text-foreground mb-2">
-          Enter 2-4 words (press Enter or click Add after each word)
-        </Label>
-        <div className="flex gap-2 mb-4">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="word1" className="text-sm font-medium text-foreground mb-2 block">
+            Word 1 <span className="text-destructive">*</span>
+          </Label>
           <Input
-            id="word-input"
+            id="word1"
             type="text"
-            placeholder="e.g., cat, dog, pizza, mountain..."
-            value={currentWord}
-            onChange={(e) => setCurrentWord(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1"
-            data-testid="input-word"
+            placeholder="e.g., king"
+            value={word1}
+            onChange={(e) => setWord1(e.target.value)}
+            className="w-full"
+            data-testid="input-word1"
           />
-          <Button
-            onClick={addWord}
-            disabled={!currentWord.trim() || words.length >= 4}
-            data-testid="button-add-word"
-          >
-            <Plus size={16} className="mr-2" />
-            Add
-          </Button>
         </div>
 
-        {/* Word Tags */}
-        <div className="flex flex-wrap gap-2" data-testid="words-container">
-          {words.map((word, index) => (
-            <span
-              key={index}
-              className="word-tag inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-full font-medium"
-              data-testid={`word-tag-${index}`}
-            >
-              {word}
-              <button
-                onClick={() => removeWord(index)}
-                className="hover:text-destructive transition-colors"
-                data-testid={`button-remove-word-${index}`}
-              >
-                <X size={16} />
-              </button>
-            </span>
-          ))}
+        <div>
+          <Label htmlFor="word2" className="text-sm font-medium text-foreground mb-2 block">
+            Word 2 <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="word2"
+            type="text"
+            placeholder="e.g., queen"
+            value={word2}
+            onChange={(e) => setWord2(e.target.value)}
+            className="w-full"
+            data-testid="input-word2"
+          />
         </div>
 
-        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-          <Info size={12} />
-          <span data-testid="word-count">{words.length}</span> of 4 words added (2 minimum, 4 maximum)
-        </p>
+        <div>
+          <Label htmlFor="word3" className="text-sm font-medium text-foreground mb-2 block">
+            Word 3 <span className="text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            id="word3"
+            type="text"
+            placeholder="e.g., man"
+            value={word3}
+            onChange={(e) => setWord3(e.target.value)}
+            className="w-full"
+            data-testid="input-word3"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="word4" className="text-sm font-medium text-foreground mb-2 block">
+            Word 4 <span className="text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            id="word4"
+            type="text"
+            placeholder="e.g., woman"
+            value={word4}
+            onChange={(e) => setWord4(e.target.value)}
+            className="w-full"
+            data-testid="input-word4"
+          />
+        </div>
       </div>
 
-      {/* Analyze Button */}
       <Button
         onClick={handleAnalyze}
-        disabled={words.length < 2 || !apiKey.trim() || analyzeMutation.isPending}
+        disabled={!word1.trim() || !word2.trim() || analyzeMutation.isPending}
         className="w-full px-6 py-4 gradient-bg text-white rounded-lg font-semibold text-lg hover:shadow-lg transition-all"
         data-testid="button-analyze"
       >
         <Wand2 size={20} className="mr-2" />
         Analyze Word Vectors
       </Button>
-    </>
+    </div>
   );
 }

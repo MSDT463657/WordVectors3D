@@ -83,13 +83,11 @@ function ConnectionLines({
         const opacity = Math.max(0.3, sim.similarity);
 
         return (
-          <line key={index} geometry={geometry}>
-            <lineBasicMaterial 
-              color={getLineColor(sim.similarity)} 
-              opacity={opacity} 
-              transparent 
-            />
-          </line>
+          <primitive key={index} object={new THREE.Line(geometry, new THREE.LineBasicMaterial({
+            color: getLineColor(sim.similarity),
+            opacity: opacity,
+            transparent: true
+          }))} />
         );
       })}
     </>

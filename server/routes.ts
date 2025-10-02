@@ -72,15 +72,12 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/analyze", async (req, res) => {
     try {
-      const { words, apiKey } = analyzeWordsRequestSchema.parse(req.body);
-      
-      // Create a temporary OpenAI client with the user's API key
-      const userOpenAI = new OpenAI({ apiKey });
+      const { words } = analyzeWordsRequestSchema.parse(req.body);
       
       // Fetch embeddings for all words
       const embeddingPromises = words.map(async (word) => {
         try {
-          const response = await userOpenAI.embeddings.create({
+          const response = await openai.embeddings.create({
             model: "text-embedding-3-small",
             input: word,
           });
@@ -88,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             word,
             embedding: response.data[0].embedding,
           };
-        } catch (error) {
+        } catch (error: any) {
           throw new Error(`Failed to get embedding for "${word}": ${error.message}`);
         }
       });
@@ -129,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Analysis error:', error);
       
       if (error instanceof z.ZodError) {
@@ -139,20 +136,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      if (error.message.includes('Invalid API key') || error.message.includes('Incorrect API key')) {
+      if (error?.message?.includes('Invalid API key') || error?.message?.includes('Incorrect API key')) {
         return res.status(401).json({ 
           message: "Invalid OpenAI API key. Please check your API key and try again." 
         });
       }
       
-      if (error.message.includes('quota') || error.message.includes('rate limit')) {
+      if (error?.message?.includes('quota') || error?.message?.includes('rate limit')) {
         return res.status(429).json({ 
           message: "OpenAI API rate limit or quota exceeded. Please try again later." 
         });
       }
 
       res.status(500).json({ 
-        message: error.message || "Failed to analyze words. Please try again." 
+        message: error?.message || "Failed to analyze words. Please try again." 
       });
     }
   });

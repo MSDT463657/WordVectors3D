@@ -7,7 +7,6 @@ export const wordEmbeddingSchema = z.object({
 
 export const analyzeWordsRequestSchema = z.object({
   words: z.array(z.string()).min(2).max(4),
-  apiKey: z.string().min(1),
 });
 
 export const similarityResultSchema = z.object({
