@@ -1,7 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import OpenAI from "openai";
-import { analyzeWordsRequestSchema, type AnalysisResult } from "@shared/schema";
+import { 
+  analyzeWordsRequestSchema, 
+  predictNextWordRequestSchema,
+  type AnalysisResult,
+  type PredictNextWordResult 
+} from "@shared/schema";
 import { z } from "zod";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
@@ -180,6 +185,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(500).json({ 
         message: error?.message || "Failed to analyze words. Please try again." 
+      });
+    }
+  });
+
+  app.post("/api/predict", async (req, res) => {
+    try {
+      const { context, candidateWords } = predictNextWordRequestSchema.parse(req.body);
+      
+      // Get embedding for the context
+      const contextResponse = await openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: context,
+      });
+      const contextEmbedding = contextResponse.data[0].embedding;
+      
+      // Get embeddings for candidate words
+      const candidatePromises = candidateWords.map(async (word) => {
+        const response = await openai.embeddings.create({
+          model: "text-embedding-3-small",
+          input: word,
+        });
+        return {
+          word,
+          embedding: response.data[0].embedding,
+        };
+      });
+      
+      const candidates = await Promise.all(candidatePromises);
+      
+      // Calculate similarity scores
+      const predictions = candidates.map((candidate) => {
+        const similarity = cosineSimilarity(contextEmbedding, candidate.embedding);
+        return {
+          word: candidate.word,
+          similarity: Math.round(similarity * 1000) / 1000,
+          probability: 0, // Will calculate below
+        };
+      });
+      
+      // Sort by similarity (highest first)
+      predictions.sort((a, b) => b.similarity - a.similarity);
+      
+      // Convert similarities to probabilities using softmax
+      const maxSim = predictions[0].similarity;
+      const expScores = predictions.map(p => Math.exp((p.similarity - maxSim) * 10)); // Scale by 10 for better distribution
+      const sumExp = expScores.reduce((sum, val) => sum + val, 0);
+      
+      predictions.forEach((prediction, index) => {
+        prediction.probability = Math.round((expScores[index] / sumExp) * 100 * 10) / 10;
+      });
+      
+      const result: PredictNextWordResult = {
+        context,
+        contextEmbedding,
+        predictions,
+        topPrediction: predictions[0].word,
+      };
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error('Prediction error:', error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: error?.message || "Failed to predict next word. Please try again." 
       });
     }
   });

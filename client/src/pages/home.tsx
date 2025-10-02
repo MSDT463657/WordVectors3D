@@ -1,9 +1,10 @@
 import { useState, Component, type ReactNode } from "react";
-import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot } from "lucide-react";
+import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot, Sparkles } from "lucide-react";
 import WordInput from "@/components/word-input";
 import SimilarityDisplay from "@/components/similarity-display";
 import Visualization3D from "@/components/visualization-3d";
 import PCAExplanation from "@/components/pca-explanation";
+import WordPredictionDemo from "@/components/word-prediction-demo";
 import { type AnalysisResult } from "@shared/schema";
 
 class Visualization3DErrorBoundary extends Component<
@@ -162,6 +163,16 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Interactive Word Prediction Demo */}
+        <section className="bg-card rounded-lg shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="text-2xl text-purple-500" size={24} />
+            <h2 className="text-2xl font-bold text-card-foreground">Try It Yourself: Word Prediction Demo</h2>
+          </div>
+          
+          <WordPredictionDemo />
         </section>
       </main>
 
