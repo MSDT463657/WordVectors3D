@@ -153,32 +153,17 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
   const [webglError, setWebglError] = useState(false);
-  const [contextLost, setContextLost] = useState(false);
-  const [canvasKey, setCanvasKey] = useState(0);
+  const [canvasKey] = useState(0);
 
-  // Handle WebGL context loss and restoration
+  // Catch WebGL context issues early
   useEffect(() => {
-    const handleContextLost = (event: Event) => {
-      event.preventDefault();
-      console.log('WebGL context lost');
-      setContextLost(true);
-    };
-
-    const handleContextRestored = () => {
-      console.log('WebGL context restored');
-      setContextLost(false);
-      setCanvasKey(prev => prev + 1); // Force Canvas remount
-    };
-
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      canvas.addEventListener('webglcontextlost', handleContextLost);
-      canvas.addEventListener('webglcontextrestored', handleContextRestored);
-      
-      return () => {
-        canvas.removeEventListener('webglcontextlost', handleContextLost);
-        canvas.removeEventListener('webglcontextrestored', handleContextRestored);
-      };
+    // Check for WebGL support
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    
+    if (!gl) {
+      console.error('WebGL not supported');
+      setWebglError(true);
     }
   }, []);
 
@@ -206,47 +191,44 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
 
       {/* 3D Canvas Container */}
       <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        {contextLost ? (
+        {webglError ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center p-8">
+            <div className="text-center p-8 max-w-md">
               <p className="text-muted-foreground mb-4">
-                ⚠️ 3D graphics temporarily unavailable
+                ⚠️ 3D visualization unavailable
               </p>
-              <p className="text-sm text-muted-foreground">
-                Your browser's graphics engine needed to restart. Please refresh the page to restore the visualization.
+              <p className="text-sm text-muted-foreground mb-4">
+                The 3D graphics engine couldn't start in this environment. This can happen when GPU resources are limited.
               </p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="mt-4"
-                data-testid="button-refresh-page"
-              >
-                Refresh Page
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Don't worry - all word analysis and similarity calculations are working perfectly! Only the 3D visualization is affected.
+              </p>
             </div>
           </div>
-        ) : !webglError ? (
+        ) : (
           <Canvas 
             key={canvasKey}
             camera={{ position: [5, 5, 5], fov: 60 }}
+            gl={{ 
+              powerPreference: "low-power",
+              antialias: false,
+              preserveDrawingBuffer: true
+            }}
             onCreated={({ gl }) => {
               console.log('WebGL context created successfully');
+              
+              // Handle context loss at the canvas level
+              const canvas = gl.domElement;
+              canvas.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                console.log('WebGL context lost, setting error state');
+                setWebglError(true);
+              }, false);
             }}
             onError={(error) => {
-              console.error('WebGL error:', error);
+              console.error('3D Visualization error:', error);
               setWebglError(true);
             }}
-            fallback={
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center p-8">
-                  <p className="text-muted-foreground mb-4">
-                    3D visualization requires WebGL support
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Your browser or environment may not support WebGL
-                  </p>
-                </div>
-              </div>
-            }
           >
             <Scene 
               analysisResult={analysisResult} 
@@ -254,17 +236,6 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
               showConnections={showConnections}
             />
           </Canvas>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center p-8">
-              <p className="text-muted-foreground mb-4">
-                Unable to initialize 3D visualization
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Please ensure your browser supports WebGL
-              </p>
-            </div>
-          </div>
         )}
 
         {/* Control Panel Overlay */}
