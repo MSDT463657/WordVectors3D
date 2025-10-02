@@ -10,7 +10,7 @@ export class Vanilla3DScene {
   private animationId: number | null = null;
   private container: HTMLElement;
   private rotationAngle: number = 0;
-  private autoRotateEnabled: boolean = true;
+  private autoRotateEnabled: boolean = false;
 
   constructor(container: HTMLElement) {
     this.container = container;
