@@ -7,6 +7,8 @@ import PCAExplanation from "@/components/pca-explanation";
 import WordPredictionDemo from "@/components/word-prediction-demo";
 import SavedAnalyses from "@/components/saved-analyses";
 import ComparisonView from "@/components/comparison-view";
+import TutorialOverlay from "@/components/tutorial-overlay";
+import InfoTooltip from "@/components/info-tooltip";
 import { type AnalysisResult } from "@shared/schema";
 
 interface SavedAnalysis {
@@ -133,6 +135,10 @@ export default function Home() {
             <div className="flex items-center gap-3 mb-6">
               <Calculator className="text-2xl text-primary" size={24} />
               <h2 className="text-2xl font-bold text-card-foreground">Step 2: Vector Calculations</h2>
+              <InfoTooltip 
+                title="Cosine Similarity"
+                content="Measures the angle between two word vectors. A score of 1.0 means vectors point in the same direction (very similar), 0 means perpendicular (unrelated), and -1 means opposite directions."
+              />
             </div>
             
             <SimilarityDisplay analysisResult={analysisResult} />
@@ -145,6 +151,10 @@ export default function Home() {
             <div className="flex items-center gap-3 mb-6">
               <Box className="text-2xl text-primary" size={24} />
               <h2 className="text-2xl font-bold text-card-foreground">Step 3: 3D Spatial Visualization</h2>
+              <InfoTooltip 
+                title="PCA (Principal Component Analysis)"
+                content="Your words exist in 1536-dimensional space (too many to visualize). PCA reduces this to 3D while preserving the most important patterns and relationships between words."
+              />
             </div>
             
             <Visualization3DErrorBoundary>
@@ -232,6 +242,9 @@ export default function Home() {
           onClose={handleCloseComparison}
         />
       )}
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay />
     </div>
   );
 }
