@@ -83,13 +83,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="gradient-bg text-white py-12 px-4">
+      <header className="gradient-bg py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <Brain className="text-4xl" size={48} />
-            <h1 className="text-4xl md:text-5xl font-bold">AI Word Vector Visualizer</h1>
+            <Brain className="text-4xl text-gray-800 dark:text-white" size={48} />
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">AI Word Vector Visualizer</h1>
           </div>
-          <p className="text-xl text-white/90 max-w-3xl">
+          <p className="text-xl text-gray-700 dark:text-white/90 max-w-3xl">
             Learn how AI understands words through vector embeddings and semantic similarity. 
             Enter words and see how they relate to each other in 3D space!
           </p>
