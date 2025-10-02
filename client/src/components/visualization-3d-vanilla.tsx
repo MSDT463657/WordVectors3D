@@ -110,47 +110,6 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
               </div>
             )}
 
-            {/* Word labels overlay */}
-            {initialized && (
-              <div className="absolute inset-0 pointer-events-none">
-                {analysisResult.visualization.coordinates.map((coord, idx) => {
-                  // Calculate the same scaling used in the 3D scene
-                  const coordinates = analysisResult.visualization.coordinates;
-                  const xs = coordinates.map(c => c.x);
-                  const ys = coordinates.map(c => c.y);
-                  const zs = coordinates.map(c => c.z);
-                  
-                  const maxRange = Math.max(
-                    Math.max(...xs) - Math.min(...xs),
-                    Math.max(...ys) - Math.min(...ys),
-                    Math.max(...zs) - Math.min(...zs)
-                  );
-                  
-                  const scale = maxRange > 0 ? 10 / maxRange : 50;
-                  
-                  const scaledCoord = {
-                    x: coord.x * scale,
-                    y: coord.y * scale,
-                    z: coord.z * scale,
-                  };
-                  
-                  return (
-                    <div
-                      key={coord.word}
-                      className="absolute text-xs font-semibold text-primary bg-background/80 px-2 py-1 rounded backdrop-blur-sm"
-                      style={{
-                        left: `${50 + scaledCoord.x * 3}%`,
-                        top: `${50 - scaledCoord.y * 3}%`,
-                        transform: "translate(-50%, -50%)",
-                      }}
-                      data-testid={`label-${coord.word}`}
-                    >
-                      {coord.word}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </>
         )}
       </div>

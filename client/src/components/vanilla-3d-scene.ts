@@ -19,7 +19,29 @@ export class Vanilla3DScene {
       0.1,
       1000
     );
-    this.camera.position.set(5, 5, 5);
+    // Position camera with Z-axis as main reference (looking down from above)
+    this.camera.position.set(0, 0, 15);
+  }
+
+  // Create text sprite for word labels
+  private createTextSprite(text: string, color: THREE.Color): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d')!;
+    canvas.width = 256;
+    canvas.height = 128;
+    
+    context.fillStyle = `rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255})`;
+    context.font = 'Bold 48px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, 128, 64);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(2, 1, 1);
+    
+    return sprite;
   }
 
   async init(): Promise<boolean> {
@@ -54,8 +76,8 @@ export class Vanilla3DScene {
       pointLight.position.set(10, 10, 10);
       this.scene.add(pointLight);
 
-      // Add axes helper
-      const axesHelper = new THREE.AxesHelper(3);
+      // Add axes helper - doubled in length, bisecting at origin
+      const axesHelper = new THREE.AxesHelper(6);
       this.scene.add(axesHelper);
 
       return true;
@@ -109,7 +131,7 @@ export class Vanilla3DScene {
       this.controls.update();
     }
 
-    // Add word points with larger, more visible spheres
+    // Add word points with larger, more visible spheres and rotating text labels
     scaledCoordinates.forEach((coord, index) => {
       const geometry = new THREE.SphereGeometry(0.4, 32, 32); // Increased size from 0.15 to 0.4
       const color = new THREE.Color(`hsl(${(index * 80) % 360}, 75%, 55%)`); // More vibrant colors
@@ -120,6 +142,12 @@ export class Vanilla3DScene {
       });
       const sphere = new THREE.Mesh(geometry, material);
       sphere.position.set(coord.x, coord.y, coord.z);
+      
+      // Add text label as child of sphere (will rotate with it)
+      const textSprite = this.createTextSprite(coord.word, color);
+      textSprite.position.set(0, 0.8, 0); // Position above sphere
+      sphere.add(textSprite);
+      
       this.scene.add(sphere);
     });
 
