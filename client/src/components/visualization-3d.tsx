@@ -179,57 +179,11 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [showConnections, setShowConnections] = useState(true);
-  const [webglError, setWebglError] = useState(false);
+  // Disable 3D by default - user can enable if their environment supports it
+  const [webglError, setWebglError] = useState(true);
   const [webglReady, setWebglReady] = useState(false);
   const [canvasKey] = useState(0);
-
-  // Test WebGL stability before rendering
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    const testWebGL = () => {
-      try {
-        const testCanvas = document.createElement('canvas');
-        const gl = (testCanvas.getContext('webgl', { 
-          failIfMajorPerformanceCaveat: false,
-          powerPreference: 'low-power'
-        }) || testCanvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-        
-        if (!gl) {
-          setWebglError(true);
-          return;
-        }
-
-        // Test if context immediately fails
-        const contextLostHandler = () => {
-          console.log('WebGL context unstable, disabling 3D');
-          setWebglError(true);
-        };
-        
-        testCanvas.addEventListener('webglcontextlost', contextLostHandler);
-        
-        // Wait a bit to see if context is stable
-        timeoutId = setTimeout(() => {
-          testCanvas.removeEventListener('webglcontextlost', contextLostHandler);
-          if (gl && !gl.isContextLost()) {
-            console.log('WebGL stable, ready to render');
-            setWebglReady(true);
-          } else {
-            setWebglError(true);
-          }
-        }, 100);
-      } catch (error) {
-        console.error('WebGL test failed:', error);
-        setWebglError(true);
-      }
-    };
-
-    testWebGL();
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, []);
+  const [user3DEnabled, setUser3DEnabled] = useState(false);
 
   return (
     <>
@@ -255,17 +209,28 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
 
       {/* 3D Canvas Container */}
       <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg overflow-hidden">
-        {webglError ? (
+        {(webglError && !user3DEnabled) ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center p-8 max-w-md">
               <p className="text-muted-foreground mb-4">
-                ⚠️ 3D visualization unavailable
+                💡 3D Visualization Disabled
               </p>
               <p className="text-sm text-muted-foreground mb-4">
-                The 3D graphics engine couldn't start in this environment. This can happen when GPU resources are limited.
+                3D visualization is disabled by default to prevent graphics errors in some environments.
               </p>
+              <Button
+                onClick={() => {
+                  setWebglError(false);
+                  setWebglReady(true);
+                  setUser3DEnabled(true);
+                }}
+                className="mb-3"
+                data-testid="button-enable-3d"
+              >
+                Enable 3D Visualization
+              </Button>
               <p className="text-xs text-muted-foreground">
-                Don't worry - all word analysis and similarity calculations are working perfectly! Only the 3D visualization is affected.
+                All word analysis and similarity calculations are working perfectly!
               </p>
             </div>
           </div>
