@@ -73,7 +73,8 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
     let variance = 0;
     for (let i = 0; i < numSamples; i++) {
       const chunk = centeredData[i].slice(start, end);
-      const projection = chunk.reduce((sum, val) => sum + val, 0) / chunk.length;
+      // Normalize by sqrt of chunk length to handle different dimensionalities
+      const projection = chunk.reduce((sum, val) => sum + val, 0) / Math.sqrt(chunk.length);
       
       if (!coordinates[i]) {
         coordinates[i] = { x: 0, y: 0, z: 0 };
@@ -90,7 +91,9 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
   
   // Calculate total variance and percentages
   const totalVariance = variances.reduce((sum, v) => sum + v, 0);
-  const varianceExplained = variances.map(v => (v / totalVariance) * 100);
+  const varianceExplained = totalVariance > 0 
+    ? variances.map(v => (v / totalVariance) * 100)
+    : variances.map(() => 100 / targetDim);
 
   return {
     coordinates,
@@ -106,13 +109,13 @@ function performPCA(embeddings: number[][], targetDim: number = 3) {
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/analyze", async (req, res) => {
     try {
-      const { words } = analyzeWordsRequestSchema.parse(req.body);
+      const { words, model } = analyzeWordsRequestSchema.parse(req.body);
       
       // Fetch embeddings for all words
       const embeddingPromises = words.map(async (word) => {
         try {
           const response = await openai.embeddings.create({
-            model: "text-embedding-3-small",
+            model: model || "text-embedding-3-small",
             input: word,
           });
           return {
@@ -158,6 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         embeddings,
         similarities,
         visualization,
+        model: model || "text-embedding-3-small",
       };
 
       res.json(result);

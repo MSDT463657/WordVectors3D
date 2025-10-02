@@ -4,6 +4,7 @@ import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { type AnalysisResult, type AnalyzeWordsRequest } from "@shared/schema";
@@ -19,6 +20,7 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
   const [word2, setWord2] = useState("");
   const [word3, setWord3] = useState("");
   const [word4, setWord4] = useState("");
+  const [model, setModel] = useState<"text-embedding-3-small" | "text-embedding-3-large">("text-embedding-3-small");
   const { toast } = useToast();
 
   const analyzeMutation = useMutation({
@@ -69,7 +71,7 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
     }
 
     onAnalysisStart();
-    analyzeMutation.mutate({ words: uniqueWords });
+    analyzeMutation.mutate({ words: uniqueWords, model });
   };
 
   return (
@@ -134,6 +136,28 @@ export default function WordInput({ onAnalysisStart, onAnalysisComplete, onAnaly
             data-testid="input-word4"
           />
         </div>
+      </div>
+
+      <div className="space-y-3">
+        <Label htmlFor="model-select" className="text-sm font-medium text-foreground">
+          Embedding Model
+        </Label>
+        <Select value={model} onValueChange={(value: any) => setModel(value)}>
+          <SelectTrigger id="model-select" className="w-full" data-testid="select-model">
+            <SelectValue placeholder="Select embedding model" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="text-embedding-3-small">
+              text-embedding-3-small (1536 dimensions, faster)
+            </SelectItem>
+            <SelectItem value="text-embedding-3-large">
+              text-embedding-3-large (3072 dimensions, more accurate)
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Small model is faster and suitable for most uses. Large model provides more detailed embeddings with higher dimensionality.
+        </p>
       </div>
 
       <Button

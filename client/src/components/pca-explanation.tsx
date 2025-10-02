@@ -7,6 +7,7 @@ interface PCAExplanationProps {
 
 export default function PCAExplanation({ analysisResult }: PCAExplanationProps) {
   const { pcaInfo } = analysisResult.visualization;
+  const modelName = analysisResult.model || "text-embedding-3-small";
   
   const getBarColor = (index: number) => {
     const colors = ["bg-accent", "bg-primary", "bg-secondary"];
@@ -26,10 +27,13 @@ export default function PCAExplanation({ analysisResult }: PCAExplanationProps) 
           <Info className="text-accent mt-0.5 flex-shrink-0" size={20} />
           <div>
             <h3 className="font-semibold text-foreground mb-2">How Dimensionality Reduction Works</h3>
-            <p className="text-sm text-muted-foreground">
-              Word embeddings exist in {pcaInfo.originalDimensions}-dimensional space, which humans can't visualize. 
-              We use a technique called <strong>PCA (Principal Component Analysis)</strong> to project these high-dimensional 
-              vectors into 3D space while preserving as much information as possible.
+            <p className="text-sm text-muted-foreground mb-2">
+              Word embeddings from <strong>{modelName}</strong> exist in {pcaInfo.originalDimensions}-dimensional space, 
+              which humans can't visualize. We use a technique called <strong>PCA (Principal Component Analysis)</strong> to 
+              project these high-dimensional vectors into 3D space while preserving as much information as possible.
+            </p>
+            <p className="text-xs text-muted-foreground/80">
+              Model: {modelName} ({pcaInfo.originalDimensions} dimensions)
             </p>
           </div>
         </div>

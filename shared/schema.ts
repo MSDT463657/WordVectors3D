@@ -7,6 +7,7 @@ export const wordEmbeddingSchema = z.object({
 
 export const analyzeWordsRequestSchema = z.object({
   words: z.array(z.string()).min(2).max(4),
+  model: z.enum(["text-embedding-3-small", "text-embedding-3-large"]).default("text-embedding-3-small"),
 });
 
 export const similarityResultSchema = z.object({
@@ -32,6 +33,7 @@ export const analysisResultSchema = z.object({
       method: z.string(),
     }),
   }),
+  model: z.string().optional(),
 });
 
 export const predictNextWordRequestSchema = z.object({
