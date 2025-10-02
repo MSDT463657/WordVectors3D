@@ -98,17 +98,32 @@ export class Vanilla3DScene {
       z: coord.z * scale,
     }));
 
-    // Add word points
+    // Calculate center of word cluster for camera controls
+    const centerX = scaledCoordinates.reduce((sum, c) => sum + c.x, 0) / scaledCoordinates.length;
+    const centerY = scaledCoordinates.reduce((sum, c) => sum + c.y, 0) / scaledCoordinates.length;
+    const centerZ = scaledCoordinates.reduce((sum, c) => sum + c.z, 0) / scaledCoordinates.length;
+    
+    // Update controls to look at the center of the word cluster
+    if (this.controls) {
+      this.controls.target.set(centerX, centerY, centerZ);
+      this.controls.update();
+    }
+
+    // Add word points with larger, more visible spheres
     scaledCoordinates.forEach((coord, index) => {
-      const geometry = new THREE.SphereGeometry(0.15, 32, 32);
-      const color = new THREE.Color(`hsl(${(index * 60) % 360}, 70%, 50%)`);
-      const material = new THREE.MeshStandardMaterial({ color });
+      const geometry = new THREE.SphereGeometry(0.4, 32, 32); // Increased size from 0.15 to 0.4
+      const color = new THREE.Color(`hsl(${(index * 80) % 360}, 75%, 55%)`); // More vibrant colors
+      const material = new THREE.MeshStandardMaterial({ 
+        color,
+        metalness: 0.3,
+        roughness: 0.7
+      });
       const sphere = new THREE.Mesh(geometry, material);
       sphere.position.set(coord.x, coord.y, coord.z);
       this.scene.add(sphere);
     });
 
-    // Add connection lines
+    // Add connection lines between all word pairs
     if (showConnections) {
       analysisResult.similarities.forEach((sim) => {
         const word1Coord = scaledCoordinates.find(c => c.word === sim.word1);
@@ -122,11 +137,16 @@ export class Vanilla3DScene {
         ];
         
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        // Color based on similarity strength
         const colorValue = sim.similarity >= 0.7 ? 0x06b6d4 : sim.similarity >= 0.4 ? 0x3b82f6 : 0x6b7280;
+        
+        // Make lines more visible with higher base opacity
         const material = new THREE.LineBasicMaterial({
           color: colorValue,
-          opacity: Math.max(0.3, sim.similarity),
-          transparent: true
+          opacity: Math.max(0.5, sim.similarity * 0.9), // Increased visibility
+          transparent: true,
+          linewidth: 2 // Note: may not work in all browsers/WebGL implementations
         });
         const line = new THREE.Line(geometry, material);
         this.scene.add(line);
