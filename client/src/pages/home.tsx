@@ -1,11 +1,20 @@
 import { useState, Component, type ReactNode } from "react";
-import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot, Sparkles } from "lucide-react";
+import { Brain, Lightbulb, Keyboard, Calculator, Box, Bot, Sparkles, History } from "lucide-react";
 import WordInput from "@/components/word-input";
 import SimilarityDisplay from "@/components/similarity-display";
 import Visualization3D from "@/components/visualization-3d";
 import PCAExplanation from "@/components/pca-explanation";
 import WordPredictionDemo from "@/components/word-prediction-demo";
+import SavedAnalyses from "@/components/saved-analyses";
+import ComparisonView from "@/components/comparison-view";
 import { type AnalysisResult } from "@shared/schema";
+
+interface SavedAnalysis {
+  id: string;
+  timestamp: number;
+  words: string[];
+  result: AnalysisResult;
+}
 
 class Visualization3DErrorBoundary extends Component<
   { children: ReactNode },
@@ -43,6 +52,8 @@ class Visualization3DErrorBoundary extends Component<
 export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [comparisonAnalyses, setComparisonAnalyses] = useState<SavedAnalysis[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
   const handleAnalysisComplete = (result: AnalysisResult) => {
     setAnalysisResult(result);
@@ -56,6 +67,15 @@ export default function Home() {
 
   const handleAnalysisError = () => {
     setIsLoading(false);
+  };
+
+  const handleCompare = (analyses: SavedAnalysis[]) => {
+    setComparisonAnalyses(analyses);
+    setShowComparison(true);
+  };
+
+  const handleCloseComparison = () => {
+    setShowComparison(false);
   };
 
   return (
@@ -174,6 +194,14 @@ export default function Home() {
           
           <WordPredictionDemo />
         </section>
+
+        {/* Saved Analyses & Comparison */}
+        <section className="bg-card rounded-lg shadow-lg p-6">
+          <SavedAnalyses 
+            currentAnalysis={analysisResult}
+            onCompare={handleCompare}
+          />
+        </section>
       </main>
 
       {/* Footer */}
@@ -195,6 +223,14 @@ export default function Home() {
             <p className="text-sm text-muted-foreground mt-2">This may take a few seconds</p>
           </div>
         </div>
+      )}
+
+      {/* Comparison View Modal */}
+      {showComparison && (
+        <ComparisonView 
+          analyses={comparisonAnalyses}
+          onClose={handleCloseComparison}
+        />
       )}
     </div>
   );
