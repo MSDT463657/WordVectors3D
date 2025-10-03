@@ -1,7 +1,9 @@
 import { GraduationCap } from 'lucide-react';
-import step2Image from '@assets/Screenshot 2025-10-03 at 8.12.13 PM_1759511566561.png';
-import step3Image from '@assets/Screenshot 2025-10-03 at 8.12.20 PM_1759511566561.png';
-import step4Image from '@assets/Screenshot 2025-10-03 at 8.12.25 PM_1759511566560.png';
+
+// Using direct paths to attached assets
+const step2Image = '/attached_assets/Screenshot 2025-10-03 at 8.12.13 PM_1759511566561.png';
+const step3Image = '/attached_assets/Screenshot 2025-10-03 at 8.12.20 PM_1759511566561.png';
+const step4Image = '/attached_assets/Screenshot 2025-10-03 at 8.12.25 PM_1759511566560.png';
 
 export function VectorLearningModule() {
   return (
