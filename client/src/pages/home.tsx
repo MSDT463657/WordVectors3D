@@ -87,7 +87,7 @@ export default function Home() {
       <header className="bg-primary py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">AI Word Vector Visualizer</h1>
-          <p className="text-xl text-primary-foreground/90 max-w-3xl mx-auto">
+          <p className="text-xl text-white max-w-3xl mx-auto">
             Learn how AI understands words through vector embeddings and semantic similarity. 
             Enter words and see how they relate to each other in 3D space!
           </p>
