@@ -84,10 +84,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="gradient-bg py-12 px-4">
+      <header className="bg-primary py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4">AI Word Vector Visualizer</h1>
-          <p className="text-xl text-gray-700 dark:text-white/90 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">AI Word Vector Visualizer</h1>
+          <p className="text-xl text-primary-foreground/90 max-w-3xl mx-auto">
             Learn how AI understands words through vector embeddings and semantic similarity. 
             Enter words and see how they relate to each other in 3D space!
           </p>
@@ -96,14 +96,14 @@ export default function Home() {
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Educational Introduction */}
-        <section className="info-box p-6 rounded-lg fade-in">
-          <h2 className="text-2xl font-bold mb-3 text-foreground">What are Word Vectors?</h2>
-          <p className="text-foreground/80 mb-3">
-            In AI, words are represented as <strong>vectors</strong> (lists of numbers) in a high-dimensional space. 
+        <section className="bg-card p-6 rounded-lg shadow-lg fade-in">
+          <h2 className="text-2xl font-bold mb-3 text-card-foreground">What are Word Vectors?</h2>
+          <p className="text-muted-foreground mb-3">
+            In AI, words are represented as <strong className="text-foreground">vectors</strong> (lists of numbers) in a high-dimensional space. 
             Words with similar meanings have vectors that point in similar directions.
           </p>
-          <p className="text-foreground/80">
-            <strong>Cosine similarity</strong> measures how similar two word vectors are, ranging from -1 (opposite) 
+          <p className="text-muted-foreground">
+            <strong className="text-foreground">Cosine similarity</strong> measures how similar two word vectors are, ranging from -1 (opposite) 
             to 1 (identical). Values close to 1 mean the words are semantically related!
           </p>
         </section>
@@ -159,23 +159,23 @@ export default function Home() {
         )}
 
         {/* How AI Uses This */}
-        <section className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-6 border-2 border-primary/20">
-          <h2 className="text-2xl font-bold mb-3 text-foreground">How AI Uses This for Text Prediction</h2>
-          <div className="space-y-3 text-foreground/80">
+        <section className="bg-card rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold mb-3 text-card-foreground">How AI Uses This for Text Prediction</h2>
+          <div className="space-y-3 text-muted-foreground">
             <p>
-              <strong>1. Context Understanding:</strong> When AI sees "The quick brown cat jumped over the...", 
+              <strong className="text-foreground">1. Context Understanding:</strong> When AI sees "The quick brown cat jumped over the...", 
               it converts each word to vectors and understands the context.
             </p>
             <p>
-              <strong>2. Next Word Prediction:</strong> The AI looks for words with vectors similar to the context. 
+              <strong className="text-foreground">2. Next Word Prediction:</strong> The AI looks for words with vectors similar to the context. 
               Words like "fence" or "wall" would have higher similarity scores than unrelated words like "pizza".
             </p>
             <p>
-              <strong>3. Probability Calculation:</strong> Based on similarity scores and patterns learned from 
+              <strong className="text-foreground">3. Probability Calculation:</strong> Based on similarity scores and patterns learned from 
               billions of examples, the AI assigns probabilities to possible next words and chooses the most likely one.
             </p>
-            <p className="text-sm bg-white/50 p-3 rounded-lg border-l-4 border-accent">
-              <strong>Key Insight:</strong> The closer two words are in vector space, the more semantically related 
+            <p className="text-sm bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border-l-4 border-primary">
+              <strong className="text-foreground">Key Insight:</strong> The closer two words are in vector space, the more semantically related 
               they are. This is why similar words have high similarity scores while unrelated words don't.
             </p>
           </div>
