@@ -3,23 +3,17 @@ import { GraduationCap } from 'lucide-react';
 export function VectorLearningModule() {
   return (
     <section className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800 fade-in">
-      <div className="flex items-start gap-3 mb-6">
-        <GraduationCap className="text-purple-600 dark:text-purple-400 mt-1" size={32} />
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            How Vector Similarity Works: Simple Example
-          </h2>
-          <p className="text-gray-700 dark:text-gray-300">
-            Let's understand the math with a simple 3-dimensional example using "cat" and "dog":
-          </p>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        How Vector Similarity Works: Simple Example
+      </h2>
+      <p className="text-gray-700 dark:text-gray-300 mb-6">
+        Let's understand the math with a simple 3-dimensional example using "cat" and "dog":
+      </p>
 
       <div className="space-y-4">
         {/* Step 1: Vector Representation */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
             Words as Vectors
           </h4>
           <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -33,8 +27,7 @@ export function VectorLearningModule() {
 
         {/* Step 2: Dot Product */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">2</span>
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
             Multiply Matching Numbers (Dot Product)
           </h4>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -88,8 +81,7 @@ export function VectorLearningModule() {
 
         {/* Step 3: Vector Length */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">3</span>
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
             Find the "Length" of Each Vector
           </h4>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -135,8 +127,7 @@ export function VectorLearningModule() {
 
         {/* Step 4: Final Cosine Similarity */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">4</span>
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
             Put It All Together!
           </h4>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">

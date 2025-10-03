@@ -86,10 +86,7 @@ export default function Home() {
       {/* Header */}
       <header className="gradient-bg py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="text-4xl text-gray-800 dark:text-white" size={48} />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">AI Word Vector Visualizer</h1>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4">AI Word Vector Visualizer</h1>
           <p className="text-xl text-gray-700 dark:text-white/90 max-w-3xl mx-auto">
             Learn how AI understands words through vector embeddings and semantic similarity. 
             Enter words and see how they relate to each other in 3D space!
@@ -100,20 +97,15 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Educational Introduction */}
         <section className="info-box p-6 rounded-lg fade-in">
-          <div className="flex items-start gap-4">
-            <Lightbulb className="text-3xl text-accent mt-1" size={32} />
-            <div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">What are Word Vectors?</h2>
-              <p className="text-foreground/80 mb-3">
-                In AI, words are represented as <strong>vectors</strong> (lists of numbers) in a high-dimensional space. 
-                Words with similar meanings have vectors that point in similar directions.
-              </p>
-              <p className="text-foreground/80">
-                <strong>Cosine similarity</strong> measures how similar two word vectors are, ranging from -1 (opposite) 
-                to 1 (identical). Values close to 1 mean the words are semantically related!
-              </p>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold mb-3 text-foreground">What are Word Vectors?</h2>
+          <p className="text-foreground/80 mb-3">
+            In AI, words are represented as <strong>vectors</strong> (lists of numbers) in a high-dimensional space. 
+            Words with similar meanings have vectors that point in similar directions.
+          </p>
+          <p className="text-foreground/80">
+            <strong>Cosine similarity</strong> measures how similar two word vectors are, ranging from -1 (opposite) 
+            to 1 (identical). Values close to 1 mean the words are semantically related!
+          </p>
         </section>
 
         {/* How Vector Similarity Works - Always Visible */}
@@ -121,10 +113,7 @@ export default function Home() {
 
         {/* Input Section */}
         <section className="bg-card rounded-lg shadow-lg p-6 card-hover fade-in">
-          <div className="flex items-center gap-3 mb-6">
-            <Keyboard className="text-2xl text-primary" size={24} />
-            <h2 className="text-2xl font-bold text-card-foreground">Step 1: Enter Your Words</h2>
-          </div>
+          <h2 className="text-2xl font-bold text-card-foreground mb-6">Enter Your Words</h2>
           
           <WordInput 
             onAnalysisStart={handleAnalysisStart}
@@ -137,8 +126,7 @@ export default function Home() {
         {analysisResult && (
           <section className="bg-card rounded-lg shadow-lg p-6 fade-in">
             <div className="flex items-center gap-3 mb-6">
-              <Calculator className="text-2xl text-primary" size={24} />
-              <h2 className="text-2xl font-bold text-card-foreground">Step 2: Vector Calculations</h2>
+              <h2 className="text-2xl font-bold text-card-foreground">Vector Calculations</h2>
               <InfoTooltip 
                 title="Cosine Similarity"
                 content="Measures the angle between two word vectors. A score of 1.0 means vectors point in the same direction (very similar), 0 means perpendicular (unrelated), and -1 means opposite directions."
@@ -153,8 +141,7 @@ export default function Home() {
         {analysisResult && (
           <section className="bg-card rounded-lg shadow-lg p-6 fade-in">
             <div className="flex items-center gap-3 mb-6">
-              <Box className="text-2xl text-primary" size={24} />
-              <h2 className="text-2xl font-bold text-card-foreground">Step 3: 3D Spatial Visualization</h2>
+              <h2 className="text-2xl font-bold text-card-foreground">3D Spatial Visualization</h2>
               <InfoTooltip 
                 title="PCA (Principal Component Analysis)"
                 content="Your words exist in 1536-dimensional space (too many to visualize). PCA reduces this to 3D while preserving the most important patterns and relationships between words."
@@ -173,38 +160,30 @@ export default function Home() {
 
         {/* How AI Uses This */}
         <section className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-6 border-2 border-primary/20">
-          <div className="flex items-start gap-4">
-            <Bot className="text-4xl text-primary mt-1" size={48} />
-            <div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">How AI Uses This for Text Prediction</h2>
-              <div className="space-y-3 text-foreground/80">
-                <p>
-                  <strong>1. Context Understanding:</strong> When AI sees "The quick brown cat jumped over the...", 
-                  it converts each word to vectors and understands the context.
-                </p>
-                <p>
-                  <strong>2. Next Word Prediction:</strong> The AI looks for words with vectors similar to the context. 
-                  Words like "fence" or "wall" would have higher similarity scores than unrelated words like "pizza".
-                </p>
-                <p>
-                  <strong>3. Probability Calculation:</strong> Based on similarity scores and patterns learned from 
-                  billions of examples, the AI assigns probabilities to possible next words and chooses the most likely one.
-                </p>
-                <p className="text-sm bg-white/50 p-3 rounded-lg border-l-4 border-accent">
-                  <strong>Key Insight:</strong> The closer two words are in vector space, the more semantically related 
-                  they are. This is why similar words have high similarity scores while unrelated words don't.
-                </p>
-              </div>
-            </div>
+          <h2 className="text-2xl font-bold mb-3 text-foreground">How AI Uses This for Text Prediction</h2>
+          <div className="space-y-3 text-foreground/80">
+            <p>
+              <strong>1. Context Understanding:</strong> When AI sees "The quick brown cat jumped over the...", 
+              it converts each word to vectors and understands the context.
+            </p>
+            <p>
+              <strong>2. Next Word Prediction:</strong> The AI looks for words with vectors similar to the context. 
+              Words like "fence" or "wall" would have higher similarity scores than unrelated words like "pizza".
+            </p>
+            <p>
+              <strong>3. Probability Calculation:</strong> Based on similarity scores and patterns learned from 
+              billions of examples, the AI assigns probabilities to possible next words and chooses the most likely one.
+            </p>
+            <p className="text-sm bg-white/50 p-3 rounded-lg border-l-4 border-accent">
+              <strong>Key Insight:</strong> The closer two words are in vector space, the more semantically related 
+              they are. This is why similar words have high similarity scores while unrelated words don't.
+            </p>
           </div>
         </section>
 
         {/* Interactive Word Prediction Demo */}
         <section className="bg-card rounded-lg shadow-lg p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="text-2xl text-purple-500" size={24} />
-            <h2 className="text-2xl font-bold text-card-foreground">Try It Yourself: Word Prediction Demo</h2>
-          </div>
+          <h2 className="text-2xl font-bold text-card-foreground mb-6">Try It Yourself: Word Prediction Demo</h2>
           
           <WordPredictionDemo />
         </section>
