@@ -16,6 +16,7 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   const [initialized, setInitialized] = useState(false);
   const [initError, setInitError] = useState(false);
   const [showConnections, setShowConnections] = useState(true);
+  const [showAxes, setShowAxes] = useState(true);
 
   // Initialize scene
   useEffect(() => {
@@ -46,9 +47,9 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
   // Update scene when data or settings change
   useEffect(() => {
     if (sceneRef.current && initialized) {
-      sceneRef.current.updateScene(analysisResult, showConnections);
+      sceneRef.current.updateScene(analysisResult, showConnections, showAxes);
     }
-  }, [analysisResult, showConnections, initialized]);
+  }, [analysisResult, showConnections, showAxes, initialized]);
 
   // Handle resize
   useEffect(() => {
@@ -129,6 +130,16 @@ export default function Visualization3D({ analysisResult }: Visualization3DProps
             >
               {showConnections ? <Eye size={16} /> : <EyeOff size={16} />}
               {showConnections ? "Hide" : "Show"} Connections
+            </Button>
+            <Button
+              variant={showAxes ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowAxes(!showAxes)}
+              className="flex items-center gap-2"
+              data-testid="button-toggle-axes"
+            >
+              {showAxes ? <Eye size={16} /> : <EyeOff size={16} />}
+              {showAxes ? "Hide" : "Show"} Axes
             </Button>
           </div>
         </div>

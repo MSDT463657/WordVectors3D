@@ -117,7 +117,12 @@ export class Vanilla3DScene {
     }
   }
 
-  updateScene(analysisResult: AnalysisResult, showConnections: boolean) {
+  updateScene(analysisResult: AnalysisResult, showConnections: boolean, showAxes: boolean = true) {
+    // Update axes visibility
+    this.axes.forEach(axis => {
+      axis.visible = showAxes;
+    });
+
     // Clear existing objects (except lights and axes)
     const objectsToRemove: THREE.Object3D[] = [];
     this.scene.children.forEach(child => {
