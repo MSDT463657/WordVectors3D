@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, GraduationCap, CheckCircle, MinusCircle, XCircle, ArrowLeftRight, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type AnalysisResult } from "@shared/schema";
-import { VectorLearningModule } from "./vector-learning-module";
 import { dotProduct, vectorNorm, formatLargeNumber } from "@/lib/math-utils";
 
 interface SimilarityDisplayProps {
@@ -39,9 +38,6 @@ export default function SimilarityDisplay({ analysisResult }: SimilarityDisplayP
 
   return (
     <>
-      {/* Vector Learning Module with Simple Example */}
-      <VectorLearningModule />
-
       {/* Educational explanation */}
       <div className="bg-muted/50 p-4 rounded-lg mb-6">
         <p className="text-sm text-muted-foreground flex items-start gap-2">

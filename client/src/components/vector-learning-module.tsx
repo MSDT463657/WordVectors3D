@@ -2,20 +2,20 @@ import { GraduationCap } from 'lucide-react';
 
 export function VectorLearningModule() {
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg mb-6 border-2 border-purple-200 dark:border-purple-800">
-      <div className="flex items-start gap-3 mb-4">
-        <GraduationCap className="text-purple-600 dark:text-purple-400 mt-1" size={24} />
+    <section className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800 fade-in">
+      <div className="flex items-start gap-3 mb-6">
+        <GraduationCap className="text-purple-600 dark:text-purple-400 mt-1" size={32} />
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             How Vector Similarity Works: Simple Example
-          </h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            Before we dive into your 1536-dimensional word vectors, let's understand the math with a simple 3-dimensional example using "cat" and "dog":
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300">
+            Let's understand the math with a simple 3-dimensional example using "cat" and "dog":
           </p>
         </div>
       </div>
 
-      <div className="space-y-4 mt-6">
+      <div className="space-y-4">
         {/* Step 1: Vector Representation */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
@@ -175,6 +175,6 @@ export function VectorLearningModule() {
           </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

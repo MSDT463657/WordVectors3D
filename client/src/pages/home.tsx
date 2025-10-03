@@ -9,6 +9,7 @@ import SavedAnalyses from "@/components/saved-analyses";
 import ComparisonView from "@/components/comparison-view";
 import TutorialOverlay from "@/components/tutorial-overlay";
 import InfoTooltip from "@/components/info-tooltip";
+import { VectorLearningModule } from "@/components/vector-learning-module";
 import { type AnalysisResult } from "@shared/schema";
 
 interface SavedAnalysis {
@@ -114,6 +115,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* How Vector Similarity Works - Always Visible */}
+        <VectorLearningModule />
 
         {/* Input Section */}
         <section className="bg-card rounded-lg shadow-lg p-6 card-hover fade-in">
