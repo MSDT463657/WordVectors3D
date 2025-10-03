@@ -10,9 +10,9 @@
   --card-foreground: hsl(0, 0%, 0%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(0, 0%, 0%);
-  --primary: hsl(196, 100%, 44%);
+  --primary: hsl(211, 100%, 31%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(211, 100%, 31%);
+  --secondary: hsl(196, 100%, 44%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --muted: hsl(0, 0%, 85%);
   --muted-foreground: hsl(0, 0%, 50%);
@@ -20,9 +20,9 @@
   --accent-foreground: hsl(0, 0%, 0%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --border: hsl(0, 0%, 85%);
-  --input: hsl(0, 0%, 85%);
-  --ring: hsl(196, 100%, 44%);
+  --border: hsl(152, 100%, 26%);
+  --input: hsl(152, 100%, 26%);
+  --ring: hsl(211, 100%, 31%);
   --chart-1: hsl(49, 100%, 50%);
   --chart-2: hsl(78, 100%, 37%);
   --chart-3: hsl(196, 100%, 44%);
@@ -30,12 +30,12 @@
   --chart-5: hsl(152, 100%, 26%);
   --sidebar: hsl(0, 0%, 100%);
   --sidebar-foreground: hsl(0, 0%, 0%);
-  --sidebar-primary: hsl(196, 100%, 44%);
+  --sidebar-primary: hsl(211, 100%, 31%);
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(0, 0%, 85%);
-  --sidebar-accent-foreground: hsl(196, 100%, 44%);
-  --sidebar-border: hsl(0, 0%, 85%);
-  --sidebar-ring: hsl(196, 100%, 44%);
+  --sidebar-accent-foreground: hsl(211, 100%, 31%);
+  --sidebar-border: hsl(152, 100%, 26%);
+  --sidebar-ring: hsl(211, 100%, 31%);
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
@@ -49,9 +49,9 @@
   --card-foreground: hsl(0, 0%, 85%);
   --popover: hsl(0, 0%, 10%);
   --popover-foreground: hsl(0, 0%, 85%);
-  --primary: hsl(196, 100%, 44%);
+  --primary: hsl(211, 100%, 31%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(211, 100%, 31%);
+  --secondary: hsl(196, 100%, 44%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --muted: hsl(0, 0%, 20%);
   --muted-foreground: hsl(0, 0%, 75%);
@@ -59,9 +59,9 @@
   --accent-foreground: hsl(0, 0%, 0%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --border: hsl(0, 0%, 20%);
-  --input: hsl(0, 0%, 20%);
-  --ring: hsl(196, 100%, 44%);
+  --border: hsl(152, 100%, 26%);
+  --input: hsl(152, 100%, 26%);
+  --ring: hsl(211, 100%, 31%);
 }
 
 @layer base {

@@ -171,7 +171,7 @@ export class Vanilla3DScene {
     }
 
     // Add word points with larger, more visible spheres and rotating text labels
-    const sphereColors = [0xFFD100, 0x84BD00, 0x00A3E0, 0x0033A0]; // Gold, Lime Green, Light Blue, Dark Blue
+    const sphereColors = [0x0000ff, 0x00ff00, 0xff0000, 0xffff00]; // Bright Blue, Bright Green, Bright Red, Bright Yellow
     
     // Track word colors for connector blending
     const wordColors = new Map<string, THREE.Color>();
