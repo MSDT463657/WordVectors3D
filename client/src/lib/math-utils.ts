@@ -1,5 +1,21 @@
 // Mathematical utilities for vector operations and similarity calculations
 
+export function dotProduct(vec1: number[], vec2: number[]): number {
+  if (vec1.length !== vec2.length) {
+    throw new Error('Vectors must have the same length');
+  }
+  return vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
+}
+
+export function vectorNorm(vec: number[]): number {
+  const sumOfSquares = vec.reduce((sum, val) => sum + val * val, 0);
+  return Math.sqrt(sumOfSquares);
+}
+
+export function formatLargeNumber(num: number, decimals: number = 4): string {
+  return num.toFixed(decimals);
+}
+
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) {
     throw new Error('Vectors must have the same length');
