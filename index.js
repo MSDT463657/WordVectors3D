@@ -346,11 +346,17 @@ var vite_config_default = defineConfig({
       "@assets": path.resolve(import.meta.dirname, "attached_assets")
     }
   },
+  // ✅ tell Vite our entry index.html is in client/
   root: path.resolve(import.meta.dirname, "client"),
+  // ✅ build into dist, not dist/public
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
+    // changed
     emptyOutDir: true
   },
+  // ✅ make assets load properly on GitHub Pages
+  base: "/<your-repo-name>/",
+  // replace with your GitHub repo name
   server: {
     fs: {
       strict: true,
