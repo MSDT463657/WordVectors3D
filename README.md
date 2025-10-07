@@ -1,6 +1,5 @@
 # 🧠 WordVectors3D
-
-![License](https://img.shields.io/github/license/msdt463657/WordVectors3D)
+![MIT License](https://img.shields.io/github/license/msdt463657/WordVectors3D?color=blue)
 ![Last Commit](https://img.shields.io/github/last-commit/msdt463657/WordVectors3D)
 ![Repo Size](https://img.shields.io/github/repo-size/msdt463657/WordVectors3D)
 [![Live Demo](https://img.shields.io/badge/Try%20It-Live%20Demo-brightgreen)](https://msdt463657.github.io/WordVectors3D)
