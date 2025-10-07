@@ -1,3 +1,12 @@
+# 🧠 WordVectors3D
+
+![License](https://img.shields.io/github/license/msdt463657/WordVectors3D)
+![Last Commit](https://img.shields.io/github/last-commit/msdt463657/WordVectors3D)
+![Repo Size](https://img.shields.io/github/repo-size/msdt463657/WordVectors3D)
+[![Live Demo](https://img.shields.io/badge/Try%20It-Live%20Demo-brightgreen)](https://msdt463657.github.io/WordVectors3D)
+
+
+
 # 🧠 Word Vector Demo with OpenAI Embeddings
 
 This project shows how natural language words like **"cat"**, **"dog"**, and **"banana"** are converted into **vectors** (lists of floating-point numbers) using OpenAI's embedding models. It also demonstrates how to measure **semantic similarity** between words using **cosine similarity**.
