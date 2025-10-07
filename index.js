@@ -346,17 +346,15 @@ var vite_config_default = defineConfig({
       "@assets": path.resolve(import.meta.dirname, "attached_assets")
     }
   },
-  // ✅ tell Vite our entry index.html is in client/
+  // 👇 Tells Vite to start in the client/ folder
   root: path.resolve(import.meta.dirname, "client"),
-  // ✅ build into dist, not dist/public
+  // 👇 Output to dist (not dist/public)
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
-    // changed
     emptyOutDir: true
   },
-  // ✅ make assets load properly on GitHub Pages
-  base: "/<your-repo-name>/",
-  // replace with your GitHub repo name
+  // 👇 This is critical for GitHub Pages to load assets correctly
+  base: "/WordVectors3D/",
   server: {
     fs: {
       strict: true,
